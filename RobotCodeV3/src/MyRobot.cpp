@@ -5,7 +5,6 @@ RobotDemo * RobotDemo::TheRobot = NULL;
 RobotDemo::RobotDemo(void)
 {
 	TheRobot = this;
-
 	commandForward = 0;
 	commandArmShooter = 0;
 	commandTurn = 0;
@@ -35,13 +34,11 @@ void RobotDemo::Autonomous(void)
 void RobotDemo::UpdateInputs()
 {
 	//float deadzone = .1;
-
 	commandForward = leftStick->GetY();
 	commandTurn = rightStick->GetY();
 	commandArmShooter = turretStick->GetZ();
 	commandLift = turretStick->GetY();
 	//commandTurn = -rightStick->GetRawButton(2);
-
 
 	/*if(rightStick->GetY() == deadzone || rightStick->GetY() > 0 )
 	{
@@ -66,14 +63,13 @@ void RobotDemo::UpdateInputs()
 }
 void RobotDemo::OperatorControl(void)
 {
-
 	while (IsOperatorControl())
 	{
 		UpdateInputs();
 		DriveTrain->StandardArcade(-commandForward, -commandTurn, -commandArmShooter, -commandLift);
 		DriveTrain->Shifter_Update(rightStick->GetTrigger());
 		DriveTrain->Arm_Update(turretStick->GetTrigger());
-		Wait(0.002);
+		Wait(0.001);
 	}
 
 }
