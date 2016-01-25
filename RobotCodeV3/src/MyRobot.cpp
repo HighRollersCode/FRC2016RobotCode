@@ -69,7 +69,6 @@ void RobotDemo::OperatorControl(void)
 
 	while (IsOperatorControl())
 	{
-//	SmartDashboard::init();
 		UpdateInputs();
 		DriveTrain->StandardArcade(-commandForward, -commandTurn, -commandArmShooter, -commandLift);
 		DriveTrain->Shifter_Update(rightStick->GetTrigger());
