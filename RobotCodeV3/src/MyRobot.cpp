@@ -1,7 +1,7 @@
 #include "MyRobot.h"
 
 RobotDemo * RobotDemo::TheRobot = NULL;
-	//auto grip = NetworkTable::GetTable("grip");
+//auto grip = NetworkTable::GetTable("grip");
 RobotDemo::RobotDemo(void)
 {
 	TheRobot = this;
@@ -28,9 +28,9 @@ RobotDemo::~RobotDemo(void)
 {
 	TheRobot = NULL;
 }
-
 void RobotDemo::Autonomous(void)
-{}
+{
+}
 void RobotDemo::UpdateInputs()
 {
 	//float deadzone = .1;
