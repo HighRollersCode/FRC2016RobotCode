@@ -2,9 +2,8 @@
 ## Eclipse
 #################
 
-sysProps*
+
 *.pydevproject
-.project
 .metadata
 Debug/
 bin/
@@ -25,7 +24,7 @@ local.properties
 *.launch
 
 # CDT-specific
-.cproject
+
 
 # PDT-specific
 .buildpath
