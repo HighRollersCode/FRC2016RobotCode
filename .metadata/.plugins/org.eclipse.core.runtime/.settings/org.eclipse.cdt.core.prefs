@@ -1,0 +1,5 @@
+build.all.configs.enabled=false
+build.proj.ref.configs.enabled=false
+eclipse.preferences.version=1
+environment/workspace/append=true
+environment/workspace/appendContributed=true
