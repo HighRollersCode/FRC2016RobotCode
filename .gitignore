@@ -2,6 +2,7 @@
 ## Eclipse
 #################
 
+sysProps*
 *.pydevproject
 .project
 .metadata
