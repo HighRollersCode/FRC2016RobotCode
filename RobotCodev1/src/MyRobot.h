@@ -77,6 +77,7 @@ public:
 	float commandArmShooter;
 	float commandTurn;
 	float commandLift;
+	float commandTurret;
 
 
 
@@ -88,13 +89,13 @@ public:
 
 	RobotDemo(void);
 	~RobotDemo(void);
-
+/*
 	const char * const JAVA = "/usr/local/frc/JRE/bin/java";
 	const char * const GRIP_JAR = "/home/lvuser/grip.jar";
 	const char * const GRIP_PROJECT = "/home/lvuser/find-contours.grip";
 
 	NetworkTable *grip;
-
+*/
 	static RobotDemo * Get() { return TheRobot; }
 
 	void Autonomous(void);

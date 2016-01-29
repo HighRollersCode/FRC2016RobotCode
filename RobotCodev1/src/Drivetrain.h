@@ -20,6 +20,7 @@ public:
 	Talon *ArmShooter;
 	Talon *ArmShooter2;
 	Talon *ArmLifter;
+	Talon *ArmTurret;
 
 	Solenoid *ShifterHigh;
 	Solenoid *ShifterLow;
@@ -40,7 +41,7 @@ public:
 	Drivetrain();
 	virtual ~Drivetrain();
 
-	void StandardArcade(float Forward, float Turn, float Arm, float Lift);
+	void StandardArcade(float Forward, float Turn, float Arm, float Lift, float Turret);
 	void Shifter_Update(bool ShifterEnable);
 	void Arm_Update(bool Ball);
 };

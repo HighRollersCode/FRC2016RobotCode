@@ -61,7 +61,7 @@ RobotDemo::RobotDemo(void)
 {
 
 	TheRobot = this;
-	grip = NetworkTable::GetTable("grip");
+	//grip = NetworkTable::GetTable("grip");
 //	if (execle(JAVA, "-jar", GRIP_JAR, GRIP_PROJECT, (char*)0) == -1)
 //		   {
 			  //wpi_setErrnoErrorWithContext("Failed to run GRIP");
@@ -71,6 +71,7 @@ RobotDemo::RobotDemo(void)
 	commandArmShooter = 0;
 	commandTurn = 0;
 	commandLift = 0;
+	commandTurret = 0;
 
 	leftStick = new Joystick(0);
 	rightStick = new Joystick(1);			// create the joysticks
@@ -125,6 +126,7 @@ void RobotDemo::UpdateInputs()
 		commandTurn = rightStick->GetY();
 		commandArmShooter = turretStick->GetZ();
 		commandLift = turretStick->GetY();
+		commandTurret = turretStick->GetX();
 		//commandTurn = -rightStick->GetRawButton(2);
 
 
@@ -151,11 +153,10 @@ void RobotDemo::UpdateInputs()
 
 
 }
-double diffClock(timespec start, timespec end)
+/*double diffClock(timespec start, timespec end)
 {
  return	(end.tv_sec - start.tv_sec) + (double) (end.tv_nsec - start.tv_nsec)/ 1000000000.0f;
 }
-/**
  * This function uses FFMPEG codec apart of openCV to open a
  * MJPEG stream and buffer it. This function should be ran
  * in its own thread so it can run as fast as possibe and store frames.
@@ -338,7 +339,7 @@ void RobotDemo::OperatorControl(void)
 	{
 
 		UpdateInputs();
-		DriveTrain->StandardArcade(-commandForward, -commandTurn, -commandArmShooter, -commandLift);
+		DriveTrain->StandardArcade(-commandForward, -commandTurn, -commandArmShooter, -commandLift, -commandTurret);
 		DriveTrain->Shifter_Update(rightStick->GetTrigger());
 		DriveTrain->Arm_Update(turretStick->GetTrigger());
 		Wait(0.002);

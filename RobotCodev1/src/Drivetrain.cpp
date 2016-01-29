@@ -18,6 +18,7 @@ Drivetrain::Drivetrain()
 	ArmShooter = new Talon(4);
 	ArmShooter2 = new Talon(5);
 	ArmLifter = new Talon(6);
+	ArmTurret = new Talon(7);
 
 	ShifterHigh = new Solenoid(0);
 	ShifterLow = new Solenoid(1);
@@ -36,12 +37,13 @@ Drivetrain::Drivetrain()
 	CurrentBallTog = false;
 	PrevBallTog = false;
 }
-void Drivetrain::StandardArcade(float Forward, float Turn, float Arm, float Lift)
+void Drivetrain::StandardArcade(float Forward, float Turn, float Arm, float Lift, float Turret)
 {
 	float l = Forward;
 	float a = Arm;
 	float r = -Turn;
 	float b = Lift;
+	float t = Turret;
 /*if(ToggleState == -1)
 {
 	LeftDrive->Set(l);
@@ -61,6 +63,7 @@ else
 	ArmShooter->Set(a);
 	ArmShooter2->Set(-a);
 	ArmLifter->Set(b);
+	ArmTurret->Set(t);
 }
 Drivetrain::~Drivetrain() {
 	// TODO Auto-generated destructor stub
