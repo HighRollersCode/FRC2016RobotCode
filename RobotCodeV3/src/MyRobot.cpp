@@ -14,6 +14,7 @@ RobotDemo::RobotDemo(void)
 	rightStick = new Joystick(1);			// create the joysticks
 	turretStick = new Joystick(2);
 	DriveTrain = new Drivetrain();
+	Intake= new IntakeClass();
 	Arm = new ArmClass();
 	const char * const JAVA = "/usr/local/frc/JRE/bin/java";
 	char *GRIP_ARGS[5] = { "java", "-jar", "/home/lvuser/grip.jar", "/home/lvuser/project.grip", NULL };

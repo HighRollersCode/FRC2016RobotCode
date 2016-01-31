@@ -20,6 +20,7 @@ public:
 	Joystick *leftStick;			// joystick 1
 	Joystick *turretStick;			// joystick 3
 	Drivetrain *DriveTrain;
+	IntakeClass *Intake;
 	ArmClass *Arm;
 
 	RobotDemo(void);
