@@ -27,6 +27,11 @@ public:
 	Talon *LeftDrive2;
 	Talon *RightDrive2;
 
+	//Gyro *gyro;
+
+	float currentGyro;
+	float targetGyro;
+
 	Encoder *LeftEncoder;
 	Encoder *RightEncoder;
 
@@ -40,17 +45,26 @@ public:
 	bool Highgear;
 	bool Lowgear;
 
+	float mult;
+
 	Drivetrain();
-	 ~Drivetrain();
+	~Drivetrain();
 
 	int GetLeftEncoder();
 	int GetRightEncoder();
 	void ResetEncoders_Timers();
 
 	void IMUCalibration();
+
+	float ComputeAngleDelta(float t);
+
 	void StandardArcade(float Forward, float Turn);
 	void Shifter_Update(bool ShifterEnable);
 	void Drive_Auton (float Forward, float Turn);
+
+	void Failsafe_Update();
+
+	void SendData ();
 };
 
 #endif /* SRC_DRIVETRAIN_H_ */

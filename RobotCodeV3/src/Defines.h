@@ -46,8 +46,8 @@
 #define Encoder_Middle_2 3
 #define Encoder_Right_1 4
 #define Encoder_Right_2 5
-#define Encoder_Elevator_1 6
-#define Encoder_Elevator_2 7
+#define Encoder_Turret_1 6
+#define Encoder_Lift_2 7
 
 
 

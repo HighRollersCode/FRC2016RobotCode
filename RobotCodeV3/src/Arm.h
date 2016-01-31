@@ -16,8 +16,8 @@ public:
 	Talon *ArmShooter2;
 	Talon *ArmLifter;
 
-	//Encoder *TurretEncoder;
-	//Encoder *LifterEncoder;
+	Encoder *TurretEncoder;
+	Encoder *LifterEncoder;
 
 	Solenoid *BallPusher;
 	Solenoid *BallIn;
@@ -30,6 +30,7 @@ public:
 	int GetLifterEncoder();
 	void ResetEncoders_Timers2();
 	void Arm_Update(bool Ball);
+	void SendData();
 	ArmClass();
 	~ArmClass();
 };

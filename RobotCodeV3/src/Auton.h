@@ -10,12 +10,13 @@
 
 #include "WPILib.h"
 #include "Drivetrain.h"
+#include "Arm.h"
 
 class Auton
 {
 	public:
 		Drivetrain *DriveTrain;
-
+		ArmClass *Arm;
 		DriverStation *ds;
 		Timer *AutonTimer;
 		Timer *SendTimer;
@@ -27,23 +28,23 @@ class Auton
 		void AutonWait2(float Seconds, int brake);
 		bool Auto_System_Update();
 
-		//void Auto_DriveTimer(float Forward, float Turn, float Ticks);
+		void Auto_DriveTimer(float Forward, float Turn, float Ticks, float seconds);
 
-		//void Auto_GYROTURN(float heading);
-		//void Auto_GYROTURN_TIMED(float heading, float seconds);
-		//void Auto_GYROSTRAIGHT(float forward, float ticks, float desheading);
-		//void Auto_DriveGyro_Encoder(float Forward, float Ticks);
+		void Auto_GYROTURN(float heading);
+		void Auto_GYROTURN_TIMED(float heading, float seconds);
+		void Auto_GYROSTRAIGHT(float forward, float ticks, float desheading);
+		void Auto_DriveGyro_Encoder(float Forward, float Angle, float Ticks);
 
-		//void SendData();
+		void SendData();
 		//void Auto_fullShot();
 
-		//void Auto_DriveEncoder(float Forward, float Turn, float Ticks);
+		void Auto_DriveEncoder(float Forward, float Turn, float Ticks);
 		//void Auto_CameraAim();
 
 		Auton
 		(
 				Drivetrain *D,
-
+				ArmClass *A,
 				DriverStation *Ds
 		);
 		~Auton();
