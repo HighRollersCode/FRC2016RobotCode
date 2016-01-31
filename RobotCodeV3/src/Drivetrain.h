@@ -11,7 +11,7 @@
 #include "WPILib.h"
 #include "IMUProtocol.h"
 #include "IMURegisters.h"
-
+#include "AHRS.h"
 
 
 class Drivetrain

@@ -5,6 +5,7 @@
 #include "WPILib.h"
 #include "DriveTrain.h"
 #include "Arm.h"
+#include "Intake.h"
 #include <unistd.h>
 #include <stdio.h>
 
