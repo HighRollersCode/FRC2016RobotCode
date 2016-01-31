@@ -4,6 +4,7 @@
 
 #include "WPILib.h"
 #include "DriveTrain.h"
+#include "Arm.h"
 #include <unistd.h>
 #include <stdio.h>
 
@@ -19,6 +20,7 @@ public:
 	Joystick *leftStick;			// joystick 1
 	Joystick *turretStick;			// joystick 3
 	Drivetrain *DriveTrain;
+	ArmClass *Arm;
 
 	RobotDemo(void);
 	~RobotDemo(void);

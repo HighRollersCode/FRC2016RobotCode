@@ -14,6 +14,7 @@ RobotDemo::RobotDemo(void)
 	rightStick = new Joystick(1);			// create the joysticks
 	turretStick = new Joystick(2);
 	DriveTrain = new Drivetrain();
+	Arm = new ArmClass();
 	const char * const JAVA = "/usr/local/frc/JRE/bin/java";
 	char *GRIP_ARGS[5] = { "java", "-jar", "/home/lvuser/grip.jar", "/home/lvuser/project.grip", NULL };
 	if (fork() == 0)
@@ -66,9 +67,9 @@ void RobotDemo::OperatorControl(void)
 	while (IsOperatorControl())
 	{
 		UpdateInputs();
-		DriveTrain->StandardArcade(-commandForward, -commandTurn, -commandArmShooter, -commandLift);
+		DriveTrain->StandardArcade(-commandForward, -commandTurn);
 		DriveTrain->Shifter_Update(rightStick->GetTrigger());
-		DriveTrain->Arm_Update(turretStick->GetTrigger());
+		Arm->Arm_Update(turretStick->GetTrigger());
 		Wait(0.001);
 	}
 
