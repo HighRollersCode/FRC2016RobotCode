@@ -4,28 +4,35 @@
  *  Created on: Jan 10, 2016
  *      Author: 987
  */
- #include "WPILib.h"
+
 #ifndef SRC_DRIVETRAIN_H_
 #define SRC_DRIVETRAIN_H_
 
-class Drivetrain {
+#include "WPILib.h"
+#include "IMUProtocol.h"
+#include "IMURegisters.h"
+#include "AHRS.h"
 
+
+
+class Drivetrain
+{
 
 public:
+	AHRS *imu;
+	SerialPort *serial_port;
+	bool first_iteration;
+
 	Talon *LeftDrive;
 	Talon *RightDrive;
 	Talon *LeftDrive2;
 	Talon *RightDrive2;
 
-	Talon *ArmShooter;
-	Talon *ArmShooter2;
-	Talon *ArmLifter;
+	Encoder *LeftEncoder;
+	Encoder *RightEncoder;
 
 	Solenoid *ShifterHigh;
 	Solenoid *ShifterLow;
-
-	Solenoid *BallPusher;
-	Solenoid *BallIn;
 
 	bool CurrentShifterToggleTrig;
 	bool PrevShifterToggleTrig;
@@ -34,15 +41,17 @@ public:
 	bool Highgear;
 	bool Lowgear;
 
-
-	bool CurrentBallTog;
-	bool PrevBallTog;
 	Drivetrain();
-	virtual ~Drivetrain();
+	 ~Drivetrain();
 
-	void StandardArcade(float Forward, float Turn, float Arm, float Lift);
+	int GetLeftEncoder();
+	int GetRightEncoder();
+	void ResetEncoders_Timers();
+
+	void IMUCalibration();
+	void StandardArcade(float Forward, float Turn);
 	void Shifter_Update(bool ShifterEnable);
-	void Arm_Update(bool Ball);
+	void Drive_Auton (float Forward, float Turn);
 };
 
 #endif /* SRC_DRIVETRAIN_H_ */

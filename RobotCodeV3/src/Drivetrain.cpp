@@ -10,21 +10,23 @@
 
 Drivetrain::Drivetrain()
 {
+	serial_port = new SerialPort(56700,SerialPort::kMXP);
+	imu = new AHRS (SerialPort::Port::kMXP);
+	if(imu)
+	{
+		LiveWindow::GetInstance()->AddSensor("IMU", "Gyro", imu);
+	}
+
+	first_iteration = true;
 	LeftDrive = new Talon(0);
 	LeftDrive2 = new Talon(1);
 	RightDrive = new Talon(2);
 	RightDrive2 = new Talon(3);
-
-	ArmShooter = new Talon(4);
-	ArmShooter2 = new Talon(5);
-	ArmLifter = new Talon(6);
+	LeftEncoder = new Encoder(Encoder_Left_1, Encoder_Left_2, false,Encoder::EncodingType::k4X);
+	RightEncoder = new Encoder(Encoder_Left_1, Encoder_Left_2, false,Encoder::EncodingType::k4X);
 
 	ShifterHigh = new Solenoid(0);
 	ShifterLow = new Solenoid(1);
-
-	BallIn = new Solenoid(4);
-	BallPusher = new Solenoid(5);
-
 
 	CurrentShifterToggleTrig = false;
 	PrevShifterToggleTrig = false;
@@ -33,15 +35,14 @@ Drivetrain::Drivetrain()
 	Lowgear = false;
 
 	ToggleState = 1;
-	CurrentBallTog = false;
-	PrevBallTog = false;
+
+	LeftEncoder->Reset();
+	RightEncoder->Reset();
 }
-void Drivetrain::StandardArcade(float Forward, float Turn, float Arm, float Lift)
+void Drivetrain::StandardArcade(float Forward, float Turn)
 {
 	float l = Forward;
-	float a = Arm;
 	float r = -Turn;
-	float b = Lift;
 if(ToggleState == -1)
 {
 	LeftDrive->Set(l);
@@ -57,13 +58,31 @@ else
 	RightDrive->Set(r);
 	RightDrive2->Set(r);
 }
-
-	ArmShooter->Set(a);
-	ArmShooter2->Set(a);
-	ArmLifter->Set(b);
 }
-Drivetrain::~Drivetrain() {
-	// TODO Auto-generated destructor stub
+void Drivetrain::ResetEncoders_Timers()
+{
+	LeftEncoder->Reset();
+	RightEncoder->Reset();
+}
+int Drivetrain::GetLeftEncoder()
+		{
+	return LeftEncoder->Get();
+		}
+int Drivetrain::GetRightEncoder()
+{
+	return RightEncoder->Get();
+}
+void Drivetrain::IMUCalibration()
+{
+	if ( first_iteration )
+	{
+		bool is_calibrating = imu->IsCalibrating();
+		if ( !is_calibrating ) {
+			Wait( 0.3 );
+			imu->ZeroYaw();
+			first_iteration = false;
+		}
+	}
 }
 void Drivetrain::Shifter_Update(bool ShifterEnable)
 //0 pto
@@ -98,19 +117,7 @@ void Drivetrain::Shifter_Update(bool ShifterEnable)
 	}
 
 }
-void Drivetrain::Arm_Update(bool Ball)
+void Drivetrain::Drive_Auton(float Forward, float Turn)
 {
-	PrevBallTog = CurrentBallTog;
-	CurrentBallTog = Ball;
-
-	if(Ball)
-	{
-		BallPusher->Set(false);
-		BallIn->Set(true);
-	}
-	else
-	{
-		BallPusher->Set(true);
-		BallIn->Set(false);
-	}
+	StandardArcade(Forward,Turn);
 }
