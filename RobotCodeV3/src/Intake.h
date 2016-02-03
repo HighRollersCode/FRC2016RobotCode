@@ -10,7 +10,8 @@
 
 #include "WPILib.h"
 
-class IntakeClass {
+class IntakeClass
+{
 public:
 	IntakeClass(int Intake_PWM, int IntakeLift_PWM, int LiftEncoder_PWM, int LiftEncoder2_PWM);
 	virtual ~IntakeClass();
