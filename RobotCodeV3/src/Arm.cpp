@@ -12,9 +12,10 @@ ArmClass::ArmClass() {
 	ArmShooter = new Talon(4);
 	ArmShooter2 = new Talon(5);
 	ArmLifter = new Talon(6);
+	ArmTurret = new Talon(7);
 
-	LifterEncoder = new Encoder(Encoder_Turret_1, false,Encoder::EncodingType::k4X); //(Encoder_1, false,Encoder::EncodingType::k4X);
-	TurretEncoder = new Encoder(Encoder_Lift_2, false,Encoder::EncodingType::k4X); //(Encoder_1, false,Encoder::EncodingType::k4X);
+	LifterEncoder = new Encoder(Encoder_Turret_1, false,Encoder::EncodingType::k4X);
+	TurretEncoder = new Encoder(Encoder_Lift_2, false,Encoder::EncodingType::k4X);
 
 	BallIn = new Solenoid(4);
 	BallPusher = new Solenoid(5);

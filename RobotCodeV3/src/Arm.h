@@ -15,6 +15,7 @@ public:
 	Talon *ArmShooter;
 	Talon *ArmShooter2;
 	Talon *ArmLifter;
+	Talon *ArmTurret;
 
 	Encoder *TurretEncoder;
 	Encoder *LifterEncoder;
