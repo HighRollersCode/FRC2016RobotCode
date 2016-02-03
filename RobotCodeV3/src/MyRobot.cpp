@@ -9,6 +9,8 @@ RobotDemo::RobotDemo(void)
 	commandArmShooter = 0;
 	commandTurn = 0;
 	commandLift = 0;
+	commandintake = 0;
+	commandintakelift = 0;
 
 	leftStick = new Joystick(0);
 	rightStick = new Joystick(1);			// create the joysticks
@@ -40,7 +42,7 @@ void RobotDemo::UpdateInputs()
 	commandTurn = rightStick->GetY();
 	commandArmShooter = turretStick->GetZ();
 	commandLift = turretStick->GetY();
-	//commandTurn = -rightStick->GetRawButton(2);
+	commandintake = leftStick->GetTrigger();
 
 	/*if(rightStick->GetY() == deadzone || rightStick->GetY() > 0 )
 	{

@@ -18,6 +18,7 @@ public:
 	void Intake_In();
 	void Intake_Out();
 	void Intake_Off();
+	void Motors(float intake, float intakelift);
 
 	Talon *Intake;
 	Talon *IntakeLift;
