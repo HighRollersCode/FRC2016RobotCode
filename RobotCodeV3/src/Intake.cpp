@@ -31,3 +31,11 @@ void IntakeClass::Intake_Off()
 {
 	Intake->Set(0);
 }
+int IntakeClass::GetLiftEncoder()
+{
+	return LiftEncoder->Get();
+}
+void IntakeClass::SendData()
+{
+	SmartDashboard::PutNumber("LiftEncoder",LiftEncoder->Get());
+}

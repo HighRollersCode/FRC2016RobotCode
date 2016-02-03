@@ -15,15 +15,18 @@ public:
 	IntakeClass(int Intake_PWM, int IntakeLift_PWM, int LiftEncoder_PWM, int LiftEncoder2_PWM);
 	virtual ~IntakeClass();
 
-	void Intake_In();
-	void Intake_Out();
-	void Intake_Off();
+
 
 	Talon *Intake;
 	Talon *IntakeLift;
 
 	Encoder *LiftEncoder;
 
+	void Intake_In();
+	void Intake_Out();
+	void Intake_Off();
+	int GetLiftEncoder();
+	void SendData();
 };
 
 #endif /* SRC_INTAKE_H_ */
