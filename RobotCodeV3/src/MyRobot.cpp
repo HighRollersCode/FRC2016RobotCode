@@ -14,8 +14,12 @@ RobotDemo::RobotDemo(void)
 	rightStick = new Joystick(1);			// create the joysticks
 	turretStick = new Joystick(2);
 	DriveTrain = new Drivetrain();
+#if 0
 	Intake= new IntakeClass(0,0,0,0);
 	Arm = new ArmClass();
+#endif
+
+#if 0 // disable GRIP for now...
 	const char * const JAVA = "/usr/local/frc/JRE/bin/java";
 	char *GRIP_ARGS[5] = { "java", "-jar", "/home/lvuser/grip.jar", "/home/lvuser/project.grip", NULL };
 	if (fork() == 0)
@@ -25,6 +29,7 @@ RobotDemo::RobotDemo(void)
 			perror("Error running GRIP");
 		}
 	}
+#endif
 }
 RobotDemo::~RobotDemo(void)
 {
@@ -35,6 +40,7 @@ void RobotDemo::Autonomous(void)
 }
 void RobotDemo::UpdateInputs()
 {
+#if 0
 	//float deadzone = .1;
 	commandForward = leftStick->GetY();
 	commandTurn = rightStick->GetY();
@@ -62,9 +68,11 @@ void RobotDemo::UpdateInputs()
 	{
 		commandArmShooter = 0;
 	}
+#endif
 }
 void RobotDemo::OperatorControl(void)
 {
+#if 0
 	while (IsOperatorControl())
 	{
 		UpdateInputs();
@@ -73,6 +81,6 @@ void RobotDemo::OperatorControl(void)
 		Arm->Arm_Update(turretStick->GetTrigger());
 		Wait(0.001);
 	}
-
+#endif
 }
 START_ROBOT_CLASS(RobotDemo);

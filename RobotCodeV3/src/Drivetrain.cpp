@@ -10,12 +10,14 @@
 
 Drivetrain::Drivetrain()
 {
+#if 0
 	serial_port = new SerialPort(56700,SerialPort::kMXP);
 	imu = new AHRS (SerialPort::Port::kMXP);
 	if(imu)
 	{
 		LiveWindow::GetInstance()->AddSensor("IMU", "Gyro", imu);
 	}
+#endif
 
 	first_iteration = true;
 	LeftDrive = new Talon(0);
@@ -23,7 +25,7 @@ Drivetrain::Drivetrain()
 	RightDrive = new Talon(2);
 	RightDrive2 = new Talon(3);
 	LeftEncoder = new Encoder(Encoder_Left_1, Encoder_Left_2, false,Encoder::EncodingType::k4X);
-	RightEncoder = new Encoder(Encoder_Left_1, Encoder_Left_2, false,Encoder::EncodingType::k4X);
+	RightEncoder = new Encoder(Encoder_Right_1, Encoder_Right_2, false,Encoder::EncodingType::k4X);
 
 //	gyro = new Gyro(1);
 	//gyro->SetSensitivity(.007);
@@ -51,21 +53,21 @@ void Drivetrain::StandardArcade(float Forward, float Turn)
 {
 	float l = Forward;
 	float r = -Turn;
-if(ToggleState == -1)
-{
-	LeftDrive->Set(l);
-	LeftDrive2->Set(l);
-	RightDrive->Set(-l);
-	RightDrive2->Set(-l);
+	if(ToggleState == -1)
+	{
+		LeftDrive->Set(l);
+		LeftDrive2->Set(l);
+		RightDrive->Set(-l);
+		RightDrive2->Set(-l);
 
-}
-else
-{
-	LeftDrive->Set(l);
-	LeftDrive2->Set(l);
-	RightDrive->Set(r);
-	RightDrive2->Set(r);
-}
+	}
+	else
+	{
+		LeftDrive->Set(l);
+		LeftDrive2->Set(l);
+		RightDrive->Set(r);
+		RightDrive2->Set(r);
+	}
 }
 void Drivetrain::ResetEncoders_Timers()
 {
@@ -73,16 +75,16 @@ void Drivetrain::ResetEncoders_Timers()
 	RightEncoder->Reset();
 }
 int Drivetrain::GetLeftEncoder()
-		{
+{
 	return LeftEncoder->Get();
-		}
+}
 int Drivetrain::GetRightEncoder()
 {
 	return RightEncoder->Get();
 }
 void Drivetrain::IMUCalibration()
 {
-	if ( first_iteration )
+	if ( first_iteration && (imu != NULL))
 	{
 		bool is_calibrating = imu->IsCalibrating();
 		if ( !is_calibrating ) {
@@ -95,6 +97,10 @@ void Drivetrain::IMUCalibration()
 float Drivetrain::ComputeAngleDelta(float t)
 {
 #if USING_MXP
+	if (imu == NULL)
+	{
+		return 0.0f;
+	}
 	float cur = imu->GetYaw();
 	float err2 = t - imu->GetYaw();
 #else

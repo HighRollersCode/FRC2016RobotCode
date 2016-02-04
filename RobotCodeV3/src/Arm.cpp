@@ -14,8 +14,8 @@ ArmClass::ArmClass() {
 	ArmLifter = new Talon(6);
 	ArmTurret = new Talon(7);
 
-	LifterEncoder = new Encoder(Encoder_Turret_1, false,Encoder::EncodingType::k4X);
-	TurretEncoder = new Encoder(Encoder_Lift_2, false,Encoder::EncodingType::k4X);
+	LifterEncoder = new Encoder(Encoder_Turret_1 ,false,Encoder::EncodingType::k4X);
+	TurretEncoder = new Encoder(Encoder_Lift_2 ,false,Encoder::EncodingType::k4X);
 
 	BallIn = new Solenoid(4);
 	BallPusher = new Solenoid(5);
@@ -32,7 +32,7 @@ void ArmClass::Motors(float Lift, float Arm)
 	float a = Arm;
 
 	ArmShooter->Set(a);
-	ArmShooter2->Set(a);
+	ArmShooter2->Set(-a);
 	ArmLifter->Set(b);
 }
 int ArmClass::GetTurretEncoder()
