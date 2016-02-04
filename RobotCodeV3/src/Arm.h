@@ -26,7 +26,7 @@ public:
 	bool CurrentBallTog;
 	bool PrevBallTog;
 
-	void Motors(float Lift, float Arm);
+	void Motors(float Lift, float Arm, float Turret);
 	int GetTurretEncoder();
 	int GetLifterEncoder();
 	void ResetEncoders_Timers2();

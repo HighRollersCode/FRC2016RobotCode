@@ -9,6 +9,7 @@ RobotDemo::RobotDemo(void)
 	commandArmShooter = 0;
 	commandTurn = 0;
 	commandLift = 0;
+	commandTurret = 0;
 	commandintake = 0;
 	commandintakelift = 0;
 
@@ -16,7 +17,7 @@ RobotDemo::RobotDemo(void)
 	rightStick = new Joystick(1);			// create the joysticks
 	turretStick = new Joystick(2);
 	DriveTrain = new Drivetrain();
-	Intake= new IntakeClass(0,0,0,0);
+	Intake = new IntakeClass(8,9,0,0);
 	Arm = new ArmClass();
 	const char * const JAVA = "/usr/local/frc/JRE/bin/java";
 	char *GRIP_ARGS[5] = { "java", "-jar", "/home/lvuser/grip.jar", "/home/lvuser/project.grip", NULL };
@@ -42,7 +43,7 @@ void RobotDemo::UpdateInputs()
 	commandTurn = rightStick->GetY();
 	commandArmShooter = turretStick->GetZ();
 	commandLift = turretStick->GetY();
-	commandintake = leftStick->GetTrigger();
+	commandTurret = turretStick->GetX();
 
 	/*if(rightStick->GetY() == deadzone || rightStick->GetY() > 0 )
 	{
@@ -52,13 +53,38 @@ void RobotDemo::UpdateInputs()
 	{
 				commandTurn = rightStick->GetY()+rightStick->GetY();
 	}*/
+	if(leftStick->GetTrigger())
+	{
+		commandintake = .5f;
+	}
+	else if(leftStick->GetRawButton(3))
+	{
+		commandintake = -.5f;
+	}
+	else
+	{
+		commandintake = 0;
+	}
+	if(-rightStick->GetRawButton(3))
+	{
+		commandintakelift = 1.0f;
+	}
+	else if(rightStick->GetRawButton(2))
+	{
+		commandintakelift = 1.0f;
+	}
+	else
+	{
+		commandintakelift = 0;
+	}
 	if(turretStick->GetRawButton(6))
 	{
 		commandArmShooter = (turretStick->GetZ()-1)*.5f;
 	}
 	else if(turretStick->GetRawButton(7))
 	{
-		commandArmShooter = (-turretStick->GetZ()+1)*.5f;
+		commandArmShooter = -(turretStick->GetZ()-1)*.5f;
+//		commandArmShooter = 0.5f;
 	}
 	else
 	{
@@ -71,6 +97,8 @@ void RobotDemo::OperatorControl(void)
 	{
 		UpdateInputs();
 		DriveTrain->StandardArcade(-commandForward, -commandTurn);
+		Arm->Motors(-commandLift, -commandArmShooter, -commandTurret);
+		Intake->Motors(-commandintake, -commandintakelift);
 		DriveTrain->Shifter_Update(rightStick->GetTrigger());
 		Arm->Arm_Update(turretStick->GetTrigger());
 		Wait(0.001);

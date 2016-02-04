@@ -23,7 +23,7 @@ Drivetrain::Drivetrain()
 	RightDrive = new Talon(2);
 	RightDrive2 = new Talon(3);
 	LeftEncoder = new Encoder(Encoder_Left_1, Encoder_Left_2, false,Encoder::EncodingType::k4X);
-	RightEncoder = new Encoder(Encoder_Left_1, Encoder_Left_2, false,Encoder::EncodingType::k4X);
+	RightEncoder = new Encoder(Encoder_Right_1, Encoder_Right_2, false,Encoder::EncodingType::k4X);
 
 //	gyro = new Gyro(1);
 	//gyro->SetSensitivity(.007);

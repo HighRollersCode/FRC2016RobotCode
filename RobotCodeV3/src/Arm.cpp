@@ -26,13 +26,15 @@ ArmClass::ArmClass() {
 	TurretEncoder->Reset();
 	LifterEncoder->Reset();
 }
-void ArmClass::Motors(float Lift, float Arm)
+void ArmClass::Motors(float Lift, float Arm, float Turret)
 {
 	float b = Lift;
 	float a = Arm;
+	float t = Turret;
 
+	ArmTurret->Set(t);
 	ArmShooter->Set(a);
-	ArmShooter2->Set(a);
+	ArmShooter2->Set(-a);
 	ArmLifter->Set(b);
 }
 int ArmClass::GetTurretEncoder()

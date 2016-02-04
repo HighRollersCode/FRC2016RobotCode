@@ -26,7 +26,7 @@ void IntakeClass::Motors(float intake, float intakelift)
 IntakeClass::~IntakeClass() {
 	// TODO Auto-generated destructor stub
 }
-void IntakeClass::Intake_In()
+/*void IntakeClass::Intake_In()
 {
 	Intake->Set(1.0);
 }
@@ -37,7 +37,7 @@ void IntakeClass::Intake_Out()
 void IntakeClass::Intake_Off()
 {
 	Intake->Set(0);
-}
+}*/
 int IntakeClass::GetLiftEncoder()
 {
 	return LiftEncoder->Get();

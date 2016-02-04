@@ -17,6 +17,7 @@ public:
 	float commandArmShooter;
 	float commandTurn;
 	float commandLift;
+	float commandTurret;
 	float commandintake;
 	float commandintakelift;
 	Joystick *rightStick;			// joystick 2
