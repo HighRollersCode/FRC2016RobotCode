@@ -6,15 +6,17 @@
  */
 
 #include "Intake.h"
+#include "Defines.h"
 
-IntakeClass::IntakeClass(int Intake_PWM, int IntakeLift_PWM, int LiftEncoder_PWM, int LiftEncoder2_PWM)
+
+IntakeClass::IntakeClass()
 {
 	// TODO Auto-generated constructor stub
-	Intake = new Talon(8);//Intake_PWM
-	IntakeLift = new Talon(9);//IntakeLift_PWM
-	LiftEncoder = new Encoder(LiftEncoder_PWM, LiftEncoder2_PWM);
-
+	Intake = new Talon(Tal_Intake_Roller);//Intake_PWM
+	IntakeLift = new Talon(Tal_Intake_Lift);//IntakeLift_PWM
+	LiftEncoder = new Encoder(Encoder_Intake_Lift_1, Encoder_Intake_Lift_2);
 }
+
 void IntakeClass::Motors(float intake, float intakelift)
 {
 	float I = intake;
@@ -22,7 +24,9 @@ void IntakeClass::Motors(float intake, float intakelift)
 
 	Intake->Set(I);
 	IntakeLift->Set(IL);
+
 }
+
 IntakeClass::~IntakeClass() {
 	// TODO Auto-generated destructor stub
 }

@@ -17,8 +17,10 @@ RobotDemo::RobotDemo(void)
 	rightStick = new Joystick(1);			// create the joysticks
 	turretStick = new Joystick(2);
 	DriveTrain = new Drivetrain();
-	Intake = new IntakeClass(8,9,0,0);
+	Intake = new IntakeClass();
 	Arm = new ArmClass();
+
+#if 0 // GRIP
 	const char * const JAVA = "/usr/local/frc/JRE/bin/java";
 	char *GRIP_ARGS[5] = { "java", "-jar", "/home/lvuser/grip.jar", "/home/lvuser/project.grip", NULL };
 	if (fork() == 0)
@@ -28,6 +30,8 @@ RobotDemo::RobotDemo(void)
 			perror("Error running GRIP");
 		}
 	}
+#endif
+
 }
 RobotDemo::~RobotDemo(void)
 {
@@ -44,6 +48,7 @@ void RobotDemo::UpdateInputs()
 	commandArmShooter = turretStick->GetZ();
 	commandLift = turretStick->GetY();
 	commandTurret = turretStick->GetX();
+	commandArmShooter = 0;
 
 	/*if(rightStick->GetY() == deadzone || rightStick->GetY() > 0 )
 	{
@@ -53,23 +58,24 @@ void RobotDemo::UpdateInputs()
 	{
 				commandTurn = rightStick->GetY()+rightStick->GetY();
 	}*/
-	if(leftStick->GetTrigger())
+	if(rightStick->GetTrigger())
 	{
-		commandintake = .5f;
+		commandintake = -1.0f;
+		commandArmShooter = 1.0f;
 	}
-	else if(leftStick->GetRawButton(3))
+	else if(rightStick->GetRawButton(3))
 	{
-		commandintake = -.5f;
+		commandintake = 0.5f;
 	}
 	else
 	{
 		commandintake = 0;
 	}
-	if(-rightStick->GetRawButton(3))
+	if(leftStick->GetRawButton(3))
 	{
-		commandintakelift = 1.0f;
+		commandintakelift = -1.0f;
 	}
-	else if(rightStick->GetRawButton(2))
+	else if(leftStick->GetRawButton(2))
 	{
 		commandintakelift = 1.0f;
 	}
@@ -79,16 +85,12 @@ void RobotDemo::UpdateInputs()
 	}
 	if(turretStick->GetRawButton(6))
 	{
-		commandArmShooter = (turretStick->GetZ()-1)*.5f;
+		commandArmShooter = -1.0f;
 	}
 	else if(turretStick->GetRawButton(7))
 	{
-		commandArmShooter = -(turretStick->GetZ()-1)*.5f;
-//		commandArmShooter = 0.5f;
-	}
-	else
-	{
-		commandArmShooter = 0;
+		//commandArmShooter = -(turretStick->GetZ()-1)*.f;
+		commandArmShooter = 1.0f;
 	}
 }
 void RobotDemo::OperatorControl(void)
@@ -97,10 +99,11 @@ void RobotDemo::OperatorControl(void)
 	{
 		UpdateInputs();
 		DriveTrain->StandardArcade(-commandForward, -commandTurn);
-		Arm->Motors(-commandLift, -commandArmShooter, -commandTurret);
+		Arm->Update(-commandLift, -commandArmShooter, -commandTurret, turretStick->GetTrigger(), turretStick->GetRawButton(11));
 		Intake->Motors(-commandintake, -commandintakelift);
-		DriveTrain->Shifter_Update(rightStick->GetTrigger());
-		Arm->Arm_Update(turretStick->GetTrigger());
+		DriveTrain->Shifter_Update(leftStick->GetTrigger());
+		DriveTrain->SendData();
+		Arm->SendData();
 		Wait(0.001);
 	}
 

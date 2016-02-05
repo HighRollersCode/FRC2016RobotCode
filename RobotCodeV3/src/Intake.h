@@ -13,7 +13,7 @@
 class IntakeClass
 {
 public:
-	IntakeClass(int Intake_PWM, int IntakeLift_PWM, int LiftEncoder_PWM, int LiftEncoder2_PWM);
+	IntakeClass();
 	virtual ~IntakeClass();
 
 	//void Intake_In();

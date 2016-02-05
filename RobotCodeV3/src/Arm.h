@@ -26,11 +26,24 @@ public:
 	bool CurrentBallTog;
 	bool PrevBallTog;
 
-	void Motors(float Lift, float Arm, float Turret);
+	bool CurrentResetInput;
+	bool PrevResetInput;
+
+
+	int TurretEncoder_Cur;
+	int TurretEncoder_Targ;
+
+	float TurretCommand_Prev;
+	float TurretCommand_Cur;
+	float kpTurret;
+
+	void Update(float Lift, float Arm, float Turret, bool Ball, bool Reset);
 	int GetTurretEncoder();
 	int GetLifterEncoder();
 	void ResetEncoders_Timers2();
-	void Arm_Update(bool Ball);
+	void SetTurret(int targ);
+	void ResetPostion();
+
 	void SendData();
 	ArmClass();
 	~ArmClass();
