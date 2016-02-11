@@ -25,10 +25,16 @@
 #define Tal_Intake_Lift 9
 
 
-#define Sol_Shifter_High 0
-#define Sol_Shifter_Low 1
-#define Sol_Ball_In 4
-#define Sol_Ball_Pusher 5
+#define Sol_Shifter_Outer_in 0
+#define Sol_Shifter_Outer_out 1
+#define Sol_Shifter_Inner_in 2
+#define Sol_Shifter_Inner_out 3
+
+#define Sol_PTO_Enable 4
+#define Sol_PTO_Disable 5
+
+#define Sol_Ball_In 6
+#define Sol_Ball_Pusher 7
 
 
 #define Encoder_Drive_Left_1 0

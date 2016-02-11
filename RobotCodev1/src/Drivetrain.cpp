@@ -27,6 +27,7 @@ Drivetrain::Drivetrain()
 	BallPusher = new Solenoid(5);
 
 
+
 	CurrentShifterToggleTrig = false;
 	PrevShifterToggleTrig = false;
 	ToggleState = -1;

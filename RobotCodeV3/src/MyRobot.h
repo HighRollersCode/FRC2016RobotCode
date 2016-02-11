@@ -8,7 +8,7 @@
 #include "Intake.h"
 #include <unistd.h>
 #include <stdio.h>
-
+#include "CollisionManager.h"
 class RobotDemo: public SampleRobot
 {
 public:
@@ -26,6 +26,7 @@ public:
 	Drivetrain *DriveTrain;
 	IntakeClass *Intake;
 	ArmClass *Arm;
+	CollisionManager *CollManager;
 
 	RobotDemo(void);
 	~RobotDemo(void);

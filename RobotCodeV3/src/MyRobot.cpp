@@ -19,9 +19,15 @@ RobotDemo::RobotDemo(void)
 	DriveTrain = new Drivetrain();
 	Intake = new IntakeClass();
 	Arm = new ArmClass();
+	CollManager = new CollisionManager(Intake, Arm);
+	//std::shared_ptr<USBCamera> camera(new USBCamera("cam0", true));
+	//camera->SetExposureManual(50); // change this value
+	//camera->SetBrightness(20); // change this value
+	//CameraServer::GetInstance()->StartAutomaticCapture("cam0");
+SmartDashboard::init();
+//#if 0 // GRIP
 
-#if 0 // GRIP
-	const char * const JAVA = "/usr/local/frc/JRE/bin/java";
+	/*const char * const JAVA = "/usr/local/frc/JRE/bin/java";
 	char *GRIP_ARGS[5] = { "java", "-jar", "/home/lvuser/grip.jar", "/home/lvuser/project.grip", NULL };
 	if (fork() == 0)
 	{
@@ -30,7 +36,8 @@ RobotDemo::RobotDemo(void)
 			perror("Error running GRIP");
 		}
 	}
-#endif
+	*/
+//#endif
 
 }
 RobotDemo::~RobotDemo(void)
@@ -71,13 +78,13 @@ void RobotDemo::UpdateInputs()
 	{
 		commandintake = 0;
 	}
-	if(leftStick->GetRawButton(3))
+	if(leftStick->GetRawButton(2))
 	{
-		commandintakelift = -1.0f;
+		commandintakelift = -.7f;
 	}
-	else if(leftStick->GetRawButton(2))
+	else if(leftStick->GetRawButton(3))
 	{
-		commandintakelift = 1.0f;
+		commandintakelift = .7f;
 	}
 	else
 	{
@@ -97,13 +104,23 @@ void RobotDemo::OperatorControl(void)
 {
 	while (IsOperatorControl())
 	{
+	     //auto grip = NetworkTable::GetTable("grip");
+
+		/* Get published values from GRIP using NetworkTables */
+		//auto centers = grip->get("targets/centers", llvm::ArrayRef<double>());
+
 		UpdateInputs();
+
 		DriveTrain->StandardArcade(-commandForward, -commandTurn);
-		Arm->Update(-commandLift, -commandArmShooter, -commandTurret, turretStick->GetTrigger(), turretStick->GetRawButton(11));
-		Intake->Motors(-commandintake, -commandintakelift);
-		DriveTrain->Shifter_Update(leftStick->GetTrigger());
+		Arm->Update(-commandLift, -commandArmShooter, -commandTurret, turretStick->GetTrigger(), turretStick->GetRawButton(11),turretStick->GetRawButton(2),0,0);
+		Intake->Update(-commandintake, -commandintakelift);
+		DriveTrain->Shifter_Update(leftStick->GetTrigger(), leftStick->GetRawButton(10),leftStick->GetRawButton(11));
+		//DriveTrain->PTO_Update(leftStick->GetRawButton(4));
 		DriveTrain->SendData();
+		Intake->SendData();
 		Arm->SendData();
+		CollManager->Update(turretStick->GetRawButton(5), rightStick->GetRawButton(4), leftStick->GetRawButton(5));
+		SmartDashboard::PutNumber("INTAKELIFT",commandintakelift);
 		Wait(0.001);
 	}
 

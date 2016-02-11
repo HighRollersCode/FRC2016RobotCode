@@ -26,24 +26,36 @@ public:
 	bool CurrentBallTog;
 	bool PrevBallTog;
 
+	bool Resetting;
 	bool CurrentResetInput;
 	bool PrevResetInput;
 
+	int ResetState;
 
+	int ArmLifterEncoder_Cur;
+	int ArmLifterEncoder_Trag;
 	int TurretEncoder_Cur;
 	int TurretEncoder_Targ;
 
+	float ArmLifterCommand_Prev;
+	float ArmLifterCommand_Cur;
+	float kpArmLifter;
 	float TurretCommand_Prev;
 	float TurretCommand_Cur;
 	float kpTurret;
 
-	void Update(float Lift, float Arm, float Turret, bool Ball, bool Reset);
+	void Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX, float cY);
 	int GetTurretEncoder();
 	int GetLifterEncoder();
 	void ResetEncoders_Timers2();
 	void SetTurret(int targ);
+	void SetArm(int targ);
+	void ResetArm();
+	void ResetTurret();
 	void ResetPostion();
-
+	void HandleSoftLimitsBoi(float currentOutput);
+	void HandleTarget(float centerX, float centerY);
+	void GotoShooting();
 	void SendData();
 	ArmClass();
 	~ArmClass();

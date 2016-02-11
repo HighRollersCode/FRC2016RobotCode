@@ -11,20 +11,43 @@
 
 IntakeClass::IntakeClass()
 {
-	// TODO Auto-generated constructor stub
 	Intake = new Talon(Tal_Intake_Roller);//Intake_PWM
 	IntakeLift = new Talon(Tal_Intake_Lift);//IntakeLift_PWM
 	LiftEncoder = new Encoder(Encoder_Intake_Lift_1, Encoder_Intake_Lift_2);
+
+	LiftEncoder_Cur = 0;
+	LiftEncoder_Targ = 0;
+	LifterCommand_Cur = 0.0f;
+	LifterCommand_Prev = 0.0f;
+	kpLifter = .015f;
 }
 
-void IntakeClass::Motors(float intake, float intakelift)
+void IntakeClass::Update(float intake, float intakelift)
 {
+	LifterCommand_Prev = LifterCommand_Cur;
+	LifterCommand_Cur = intakelift;
+	float lifterOut = 0;
 	float I = intake;
-	float IL = intakelift;
-
 	Intake->Set(I);
-	IntakeLift->Set(IL);
 
+	LiftEncoder_Cur = GetLiftEncoder();
+	if((fabs(LifterCommand_Prev) > .1f) && (fabs(LifterCommand_Cur) < .1f))
+	{
+		LiftEncoder_Targ = LiftEncoder_Cur;
+	}
+
+	if(fabs(LifterCommand_Cur) != 0)
+	{
+		LiftEncoder_Targ = -1.0f;
+		lifterOut = LifterCommand_Cur;
+		SmartDashboard::PutNumber("STATEE2",1);
+	}
+	else
+	{
+		lifterOut = -(LiftEncoder_Targ - LiftEncoder_Cur) * kpLifter + .1f;
+		SmartDashboard::PutNumber("STATEE",0);
+	}
+	IntakeLift->Set(lifterOut);
 }
 
 IntakeClass::~IntakeClass() {
@@ -42,6 +65,22 @@ void IntakeClass::Intake_Off()
 {
 	Intake->Set(0);
 }*/
+void IntakeClass::GotoFloor()
+{
+	SetLift(0);
+}
+void IntakeClass::GotoIntake()
+{
+	SetLift(67);
+}
+void IntakeClass::GotoDefense()
+{
+	SetLift(495);
+}
+void IntakeClass::SetLift(int targ)
+{
+	LiftEncoder_Targ = targ;
+}
 int IntakeClass::GetLiftEncoder()
 {
 	return LiftEncoder->Get();

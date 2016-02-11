@@ -16,18 +16,29 @@ public:
 	IntakeClass();
 	virtual ~IntakeClass();
 
-	//void Intake_In();
-	//void Intake_Out();
-	//void Intake_Off();
-	void Motors(float intake, float intakelift);
-	int GetLiftEncoder();
-	int GetTurretEncoder();
+
 
 	Talon *Intake;
 	Talon *IntakeLift;
-
 	Encoder *LiftEncoder;
 
+	int LiftEncoder_Cur = 0;
+	int LiftEncoder_Targ = 0;
+
+	float LifterCommand_Cur = 0.0f;
+	float LifterCommand_Prev = 0.0f;
+	float kpLifter = .001f;
+
+	//void Intake_In();
+	//void Intake_Out();
+	//void Intake_Off();
+	void Update(float intake, float intakelift);
+	void GotoFloor();
+	void GotoIntake();
+	void GotoDefense();
+
+	int GetLiftEncoder();
+	void SetLift(int targ);
 	void SendData();
 };
 

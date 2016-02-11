@@ -35,15 +35,35 @@ public:
 	Encoder *LeftEncoder;
 	Encoder *RightEncoder;
 
-	Solenoid *ShifterHigh;
-	Solenoid *ShifterLow;
+	Solenoid *NormalShiftHigh;
+	Solenoid *NormalShiftLow;
+	Solenoid *NeutralEngaged;
+	Solenoid *NeutralDisEngaged;
 
-	bool CurrentShifterToggleTrig;
-	bool PrevShifterToggleTrig;
+	Solenoid *PTO0;
+	Solenoid *PTO1;
+
+	bool CurrentPTOToggleTrig;
+	bool PrevPTOToggleTrig;
+
+
+
+	bool TransitionToPTO;
+		bool TransitionToDriveTrain;
+		int TransitionState;
+		Timer *transitionwait;
+		bool syncMotors;
+	bool CurrentInnerShifterToggleTrig;
+	bool PrevInnerShifterToggleTrig;
 
 	int ToggleState;
-	bool Highgear;
-	bool Lowgear;
+	int ToggleStateNeutral;
+	int ToggleStatePTO;
+	int inPTO;
+
+
+	bool CurrentOuterShifterToggleTrig;
+	bool PrevOuterShifterToggleTrig;
 
 	float mult;
 
@@ -59,7 +79,8 @@ public:
 	float ComputeAngleDelta(float t);
 
 	void StandardArcade(float Forward, float Turn);
-	void Shifter_Update(bool ShifterEnable);
+	void Shifter_Update(bool DriveTrainShift, bool PTOEnable,bool syncEnable);
+	void PTO_Update(bool PTOEnable);
 	void Drive_Auton (float Forward, float Turn);
 
 	void Failsafe_Update();

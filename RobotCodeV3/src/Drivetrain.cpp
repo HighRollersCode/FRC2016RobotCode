@@ -33,31 +33,71 @@ Drivetrain::Drivetrain()
 	currentGyro = 0;
 	targetGyro = 0;
 
-	ShifterHigh = new Solenoid(Sol_Shifter_High);
-	ShifterLow = new Solenoid(Sol_Shifter_Low);
+	NormalShiftHigh = new Solenoid(Sol_Shifter_Inner_in);
+	NormalShiftLow = new Solenoid(Sol_Shifter_Inner_out);
 
-	CurrentShifterToggleTrig = false;
-	PrevShifterToggleTrig = false;
+	NeutralEngaged = new Solenoid(Sol_Shifter_Outer_in);
+	NeutralDisEngaged = new Solenoid(Sol_Shifter_Outer_out);
+
+	PTO0 = new Solenoid(Sol_PTO_Enable);
+	PTO1 = new Solenoid(Sol_PTO_Disable);
+
+	CurrentPTOToggleTrig = false;
+	PrevPTOToggleTrig = false;
+
+	CurrentInnerShifterToggleTrig = false;
+	PrevInnerShifterToggleTrig = false;
 	ToggleState = -1;
-	Highgear = false;
-	Lowgear = false;
+
+	CurrentOuterShifterToggleTrig = false;
+	PrevOuterShifterToggleTrig = false;
+
 
 	mult = .15f;
 
 	ToggleState = 1;
-
+	ToggleStateNeutral = -1;
+	ToggleStatePTO =-1;
+	inPTO = 0;
+	TransitionState = 0;
+	TransitionToPTO = false;
+	TransitionToDriveTrain = false;
 	LeftEncoder->Reset();
 	RightEncoder->Reset();
+	transitionwait = new Timer();
+	transitionwait->Reset();
+	syncMotors = false;
 }
 void Drivetrain::StandardArcade(float Forward, float Turn)
 {
 	float l = Forward;
 	float r = -Turn;
+	if(inPTO == 1)
+	{
+		if(l <= 0)
+		{
+			l = 0;
+		}
+	}
+	if(syncMotors)
+	{
+		if(l <= 0)
+		{
+			l = 0;
+		}
+		LeftDrive->Set(l);
+		LeftDrive2->Set(l);
+		RightDrive->Set(-l);
+		RightDrive2->Set(-l);
+	}
 
+	else
+	{
 		LeftDrive->Set(l);
 		LeftDrive2->Set(l);
 		RightDrive->Set(r);
 		RightDrive2->Set(r);
+	}
 }
 void Drivetrain::ResetEncoders_Timers()
 {
@@ -72,6 +112,7 @@ int Drivetrain::GetRightEncoder()
 {
 	return RightEncoder->Get();
 }
+
 void Drivetrain::IMUCalibration()
 {
 	if ( first_iteration && (imu != NULL))
@@ -122,38 +163,167 @@ float Drivetrain::ComputeAngleDelta(float t)
 
 #endif
 }
-void Drivetrain::Shifter_Update(bool ShifterEnable)
+
+void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEnable)
 //0 pto
 {
-	PrevShifterToggleTrig = CurrentShifterToggleTrig;
-	CurrentShifterToggleTrig = ShifterEnable;
+	if(syncEnable && inPTO == 1)
+	{
+		syncMotors = true;
+	}
+	else
+	{
+		syncMotors = false;
+	}
+	PrevInnerShifterToggleTrig = CurrentInnerShifterToggleTrig;
+	CurrentInnerShifterToggleTrig = DriveTrainShift;
 
-	if(PrevShifterToggleTrig == false && CurrentShifterToggleTrig == true)
+	PrevOuterShifterToggleTrig = CurrentOuterShifterToggleTrig;
+	CurrentOuterShifterToggleTrig = PTOEnable;
+
+	if(PrevInnerShifterToggleTrig == false && CurrentInnerShifterToggleTrig == true)
+	{
+		ToggleState = -ToggleState;
+		ToggleStateNeutral = -1;
+	}
+
+	if(ToggleState == 1)
+	{
+		//Highgear
+		NormalShiftHigh->Set(true);
+		NormalShiftLow->Set(false);
+	}
+	else if(ToggleState == -1)
+	{
+		//LowGear
+		NormalShiftHigh->Set(false);
+		NormalShiftLow->Set(true);
+	}
+
+
+	if(PrevOuterShifterToggleTrig == false && CurrentOuterShifterToggleTrig == true)
+	{
+		if(inPTO == 1)
+		{
+			TransitionToDriveTrain = true;
+		}
+		else
+		{
+			TransitionToPTO = true;
+		}
+
+		TransitionState = 0;
+	}
+
+	if(ToggleStateNeutral == 1)
+	{
+		NeutralEngaged->Set(true);
+		NeutralDisEngaged->Set(false);
+	}
+	else if(ToggleStateNeutral == -1)
+	{
+		NeutralEngaged->Set(false);
+		NeutralDisEngaged->Set(true);
+	}
+	if(ToggleStatePTO == 1)
+	{
+		PTO0->Set(false);
+		PTO1->Set(true);
+	}
+	else if(ToggleStatePTO == -1)
+	{
+		PTO0->Set(true);
+		PTO1->Set(false);
+	}
+
+	if(TransitionToPTO)
+	{
+		switch(TransitionState)
+		{
+		case 0:
+			ToggleState = -1;
+			ToggleStateNeutral = 1;
+			ToggleStatePTO = -1;
+			transitionwait->Reset();
+			transitionwait->Start();
+			TransitionState = 1;
+			break;
+		case 1:
+			if(transitionwait->Get() >= 1.0f)
+			{
+				ToggleStatePTO = 1;
+				TransitionState = 3;
+				TransitionToPTO = false;
+				inPTO = 1;
+			}
+
+
+			break;
+		}
+	}
+
+	if(TransitionToDriveTrain)
+	{
+		switch(TransitionState)
+		{
+		case 0:
+			//ToggleState = -1;
+			//ToggleStateNeutral = 1;
+			ToggleStatePTO = -1;
+			transitionwait->Reset();
+			transitionwait->Start();
+			TransitionState = 1;
+			break;
+		case 1:
+			if(transitionwait->Get() >= 1.0f)
+			{
+				ToggleStateNeutral = -1;
+				ToggleState = 1;
+				TransitionState = 3;
+				TransitionToPTO = false;
+							inPTO = 0;
+			}
+
+
+			break;
+		}
+	}
+
+
+
+}
+void Drivetrain::PTO_Update(bool PTOenable)
+{
+	/*
+	PrevPTOToggleTrig = CurrentPTOToggleTrig;
+	CurrentPTOToggleTrig = PTOenable;
+
+	if(PrevPTOToggleTrig == false && CurrentPTOToggleTrig == true)
 	{
 		ToggleState = -ToggleState;
 	}
 	else if(ToggleState == 1)
 	{
-		ShifterHigh->Set(true);
-		ShifterLow->Set(false);
+		PTOEnable->Set(true);
+		PTODisable->Set(false);
 	}
 	else if(ToggleState == -1)
 	{
-		ShifterHigh->Set(false);
-		ShifterLow->Set(true);
+		PTOEnable->Set(false);
+		PTODisable->Set(true);
 	}
 
-	if((ShifterHigh->Get() == false))
+	if((PTOEnable->Get() == false))
 	{
-		Lowgear = true;
-		Highgear = false;
+		ptoenable = true;
+		ptoenable = false;
 	}
-	if((ShifterHigh->Get() == true))
+	if((PTOEnable->Get() == true))
 	{
-		Lowgear = false;
-		Highgear = true;
+		ptoenable = false;
+		ptoenable = true;
 	}
-
+	*/
 }
 void Drivetrain::Drive_Auton(float Forward, float Turn)
 {
@@ -167,4 +337,8 @@ void Drivetrain::SendData()
 {
 	SmartDashboard::PutNumber("LeftEncoder",LeftEncoder->Get());
 	SmartDashboard::PutNumber("RightEncoder",RightEncoder->Get());
+	SmartDashboard::PutNumber("ToggleDT",ToggleState);
+		SmartDashboard::PutNumber("ToggleNeut",ToggleStateNeutral);
+		SmartDashboard::PutNumber("timer",transitionwait->Get());
+
 }

@@ -23,8 +23,18 @@ ArmClass::ArmClass() {
 	CurrentBallTog = false;
 	PrevBallTog = false;
 
+	Resetting = false;
 	CurrentResetInput = false;
 	PrevResetInput = false;
+
+	ResetState = 0;
+
+	ArmLifterEncoder_Cur = 0;
+	ArmLifterEncoder_Trag = 0;
+
+	ArmLifterCommand_Cur = 0.0f;
+	ArmLifterCommand_Prev = 0.0f;
+	kpArmLifter = .004f;
 
 
 	TurretEncoder_Cur = 0;
@@ -32,16 +42,18 @@ ArmClass::ArmClass() {
 
 	TurretCommand_Cur = 0.0f;
 	TurretCommand_Prev = 0.0f;
-	kpTurret = .01f;
+	kpTurret = .003f;
 
 	TurretEncoder->Reset();
 	LifterEncoder->Reset();
 }
-void ArmClass::Update(float Lift, float Arm, float Turret, bool Ball, bool Reset)
+void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX,float cY)
 {
+	float a = Shooter;
+	ArmLifterCommand_Prev = ArmLifterCommand_Cur;
+	ArmLifterCommand_Cur = ArmLift;
+	float ArmLifterOut = 0;
 
-	float b = Lift;
-	float a = Arm;
 	TurretCommand_Prev = TurretCommand_Cur;
 	TurretCommand_Cur = Turret;
 	float turretOut = 0;
@@ -51,6 +63,21 @@ void ArmClass::Update(float Lift, float Arm, float Turret, bool Ball, bool Reset
 
 	PrevResetInput = CurrentResetInput;
 	CurrentResetInput = Reset;
+
+	ArmLifterEncoder_Cur = GetLifterEncoder();
+	if((fabs(ArmLifterCommand_Prev) > .1f) && (fabs(ArmLifterCommand_Cur) < .1f))
+	{
+		ArmLifterEncoder_Trag = ArmLifterEncoder_Cur;
+	}
+	if(fabs(ArmLifterCommand_Cur) > .1f)
+	{
+		ArmLifterEncoder_Trag = -1.0f;
+		ArmLifterOut = ArmLifterCommand_Cur;
+	}
+	else
+	{
+		ArmLifterOut = -(ArmLifterEncoder_Trag - ArmLifterEncoder_Cur) * kpArmLifter;
+	}
 
 	TurretEncoder_Cur = GetTurretEncoder();
 	if((fabs(TurretCommand_Prev) > .1f) && (fabs(TurretCommand_Cur) < .1f))
@@ -66,10 +93,16 @@ void ArmClass::Update(float Lift, float Arm, float Turret, bool Ball, bool Reset
 	{
 		turretOut = -(TurretEncoder_Targ - TurretEncoder_Cur) * kpTurret;
 	}
+
+
+	if(EnableTracking)
+	{
+		HandleTarget(cX,cY);
+	}
 	ArmTurret->Set(turretOut);
 	ArmShooter->Set(a);
 	ArmShooter2->Set(-a);
-	ArmLifter->Set(b);
+	ArmLifter->Set(-ArmLifterOut);
 	if(CurrentResetInput && !PrevResetInput)
 	{
 		ResetPostion();
@@ -84,6 +117,8 @@ void ArmClass::Update(float Lift, float Arm, float Turret, bool Ball, bool Reset
 		BallPusher->Set(true);
 		BallIn->Set(false);
 	}
+
+	//HandleSoftLimitsBoi(turretOut);
 
 }
 void ArmClass::SetTurret(int targ)
@@ -101,9 +136,84 @@ int ArmClass::GetLifterEncoder()
 
 void ArmClass::ResetPostion()
 {
-	TurretEncoder_Targ = 0;
+	Resetting = true;
+	ResetState = 0;
 }
 
+void ArmClass::SetArm(int targ)
+{
+	ArmLifterEncoder_Trag = targ;
+}
+
+void ArmClass::ResetArm()
+{
+	SetArm(0);
+}
+
+void ArmClass::ResetTurret()
+{
+	SetTurret(0);
+}
+
+
+
+void ArmClass::HandleSoftLimitsBoi(float currentOutput)
+{
+
+	if(TurretEncoder_Cur >= 1000)
+	{
+		if(currentOutput < 0)
+		{
+			ArmTurret->Set(0);
+		}
+	}
+	if(TurretEncoder_Cur <= -1000)
+	{
+		if(currentOutput > 0)
+		{
+			ArmTurret->Set(0);
+		}
+	}
+}
+void ArmClass::HandleTarget(float centerX,float centerY)
+{
+	float moveByX_Pixels = 0;
+	float moveByY_Pixels = 0;
+
+	float moveByX_Degrees = 0;
+	float moveByY_Degrees = 0;
+
+	float moveByX_Ticks = 0;
+	float moveByY_Ticks = 0;
+
+	float xFOV = 57.12f;
+	float yFOV = 44.42f;
+
+	float xPixels = 1280;
+	float yPixels = 720;
+
+	float degreesPerPixelX = xFOV / xPixels;
+	float degreesPerPixelY = yFOV / yPixels;
+
+	float ticksPerDegreeX = 5000/180.0f;
+	float ticksPerDegreeY = 2000/30.0f;
+
+	moveByX_Pixels = centerX - (xPixels/2);
+	moveByY_Pixels = centerY - (yPixels/2);
+
+	moveByX_Degrees = moveByX_Pixels * degreesPerPixelX;
+	moveByY_Degrees = moveByY_Pixels * degreesPerPixelY;
+
+	moveByX_Ticks = moveByX_Degrees * ticksPerDegreeX;
+	moveByY_Ticks = moveByY_Degrees * ticksPerDegreeY;
+
+	SetTurret(GetTurretEncoder()+moveByX_Ticks);
+	SetArm(GetLifterEncoder()+moveByY_Ticks);
+}
+void ArmClass::GotoShooting()
+{
+	SetArm(2200);
+}
 void ArmClass::SendData()
 {
 	SmartDashboard::PutNumber("TurretEncoder",TurretEncoder->Get());
