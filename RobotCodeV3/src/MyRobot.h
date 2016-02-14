@@ -9,6 +9,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include "CollisionManager.h"
+#include "TargetingSystemClient.h"
+
+
+
 class RobotDemo: public SampleRobot
 {
 public:
@@ -27,6 +31,10 @@ public:
 	IntakeClass *Intake;
 	ArmClass *Arm;
 	CollisionManager *CollManager;
+	TargetingSystemClient *TargClient;
+
+	Timer *ReConnectTimer;
+	int connectionattempts;
 
 	RobotDemo(void);
 	~RobotDemo(void);
@@ -36,7 +44,12 @@ public:
 	void Autonomous(void);
 	void UpdateInputs();
 	void OperatorControl(void);
-	protected:
+
+	void Shutdown_Jetson(void);
+
+	void Jetson_Connection();
+
+protected:
 
 	static RobotDemo * TheRobot;
 };

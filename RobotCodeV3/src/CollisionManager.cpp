@@ -72,7 +72,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				break;
 			case 1 :
 				//Reset Turret and wait Intake
-				if(fabs(IntakeRef->GetLiftEncoder()) <= 20)
+				if(fabs(IntakeRef->GetLiftEncoder()) <= 25)
 				{
 					state = 2;
 					ArmRef->ResetTurret();
@@ -88,7 +88,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				}
 				break;
 			case 3:
-				if(fabs(ArmRef->GetLifterEncoder() <= 20))
+				if(fabs(ArmRef->GetLifterEncoder() <= 25))
 				{
 					IntakeRef->GotoIntake();
 					state = 4;

@@ -19,7 +19,7 @@ IntakeClass::IntakeClass()
 	LiftEncoder_Targ = 0;
 	LifterCommand_Cur = 0.0f;
 	LifterCommand_Prev = 0.0f;
-	kpLifter = .015f;
+	kpLifter = .004f;
 }
 
 void IntakeClass::Update(float intake, float intakelift)
@@ -47,7 +47,7 @@ void IntakeClass::Update(float intake, float intakelift)
 		lifterOut = -(LiftEncoder_Targ - LiftEncoder_Cur) * kpLifter + .1f;
 		SmartDashboard::PutNumber("STATEE",0);
 	}
-	IntakeLift->Set(lifterOut);
+	IntakeLift->Set(-lifterOut);
 }
 
 IntakeClass::~IntakeClass() {
@@ -71,7 +71,8 @@ void IntakeClass::GotoFloor()
 }
 void IntakeClass::GotoIntake()
 {
-	SetLift(67);
+	//height here
+	SetLift(85);
 }
 void IntakeClass::GotoDefense()
 {
@@ -85,7 +86,12 @@ int IntakeClass::GetLiftEncoder()
 {
 	return LiftEncoder->Get();
 }
+void IntakeClass::ResetEncoderLift()
+{
+	LiftEncoder->Reset();
+	SetLift(0);
+}
 void IntakeClass::SendData()
 {
-	SmartDashboard::PutNumber("LiftEncoder",LiftEncoder->Get());
+	SmartDashboard::PutNumber("BeaterBarEncoder",LiftEncoder->Get());
 }

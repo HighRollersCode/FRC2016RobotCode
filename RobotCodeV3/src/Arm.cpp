@@ -42,27 +42,16 @@ ArmClass::ArmClass() {
 
 	TurretCommand_Cur = 0.0f;
 	TurretCommand_Prev = 0.0f;
-	kpTurret = .003f;
+	kpTurret = .0035f;
 
 	TurretEncoder->Reset();
 	LifterEncoder->Reset();
 }
-void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX,float cY)
+void ArmClass::UpdateLift(float ArmLift)
 {
-	float a = Shooter;
 	ArmLifterCommand_Prev = ArmLifterCommand_Cur;
 	ArmLifterCommand_Cur = ArmLift;
 	float ArmLifterOut = 0;
-
-	TurretCommand_Prev = TurretCommand_Cur;
-	TurretCommand_Cur = Turret;
-	float turretOut = 0;
-
-	PrevBallTog = CurrentBallTog;
-	CurrentBallTog = Ball;
-
-	PrevResetInput = CurrentResetInput;
-	CurrentResetInput = Reset;
 
 	ArmLifterEncoder_Cur = GetLifterEncoder();
 	if((fabs(ArmLifterCommand_Prev) > .1f) && (fabs(ArmLifterCommand_Cur) < .1f))
@@ -71,13 +60,70 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	}
 	if(fabs(ArmLifterCommand_Cur) > .1f)
 	{
-		ArmLifterEncoder_Trag = -1.0f;
-		ArmLifterOut = ArmLifterCommand_Cur;
+		if(GetLifterEncoder() >= 5000)
+		{
+			if((TurretCommand_Cur) < -.2f)
+			{
+				TurretCommand_Cur *= .5f;
+			}
+		}
+		if (TurretRoughlyCentered())
+		{
+			if(GetLifterEncoder() >= 8750)
+			{
+				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, 0, 1);
+				SetTurret(8751);
+			}
+			else if(GetLifterEncoder() <= 0)
+			{
+				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, -1, 0);
+				SetTurret(0);
+			}
+			else
+			{
+				ArmLifterOut = ArmLifterCommand_Cur;
+				ArmLifterEncoder_Trag = -1.0f;
+			}
+		}
+		else
+		{
+			if(GetLifterEncoder() >= 8750)
+			{
+				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, 0, 1);
+				SetTurret(8751);
+			}
+			else if(GetLifterEncoder() <= 2000)
+			{
+				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, -1, 0);
+				SetTurret(-1990);
+			}
+			else
+			{
+				ArmLifterOut = ArmLifterCommand_Cur;
+				ArmLifterEncoder_Trag = -1.0f;
+			}
+		}
 	}
 	else
 	{
-		ArmLifterOut = -(ArmLifterEncoder_Trag - ArmLifterEncoder_Cur) * kpArmLifter;
+		if (TurretRoughlyCentered())
+		{
+			ArmLifterEncoder_Trag = Clamp_Target(ArmLifterEncoder_Trag, 0, 8750);
+		}
+		else
+		{
+			ArmLifterEncoder_Trag = Clamp_Target(ArmLifterEncoder_Trag, 2000, 8750);
+		}
+		ArmLifterOut = (ArmLifterEncoder_Trag - ArmLifterEncoder_Cur) * kpArmLifter+(FSign(ArmLifterEncoder_Trag-ArmLifterEncoder_Trag)*.15f);
 	}
+	ArmLifter->Set(ArmLifterOut);
+
+}
+void ArmClass::UpdateTurret(float Turret)
+{
+	TurretCommand_Prev = TurretCommand_Cur;
+	TurretCommand_Cur = Turret;
+	float turretOut = 0;
 
 	TurretEncoder_Cur = GetTurretEncoder();
 	if((fabs(TurretCommand_Prev) > .1f) && (fabs(TurretCommand_Cur) < .1f))
@@ -86,23 +132,67 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	}
 	if(fabs(TurretCommand_Cur) > .1f)
 	{
-		TurretEncoder_Targ = -1.0f;
-		turretOut = TurretCommand_Cur;
+		if(fabs(TurretEncoder_Cur) >= 800)
+		{
+			if(TurretEncoder_Cur >= 800)
+			{
+				if((TurretCommand_Cur) < -.2f)
+				{
+					TurretCommand_Cur *= .5f;
+				}
+			}
+			else if(TurretEncoder_Cur <= 800)
+			{
+				if((TurretCommand_Cur) > .2f)
+				{
+					TurretCommand_Cur *= .5f;
+				}
+			}
+		}
+		if(TurretEncoder_Cur >= 1221)
+		{
+			turretOut = Clamp_Target(TurretCommand_Cur, 0, 1);
+			SetTurret(1230);
+		}
+		else if(TurretEncoder_Cur <= -1221)
+		{
+			turretOut = Clamp_Target(TurretCommand_Cur, -1, 0);
+			SetTurret(-1230);
+		}
+		else
+		{
+			turretOut = TurretCommand_Cur;
+			TurretEncoder_Targ = -1.0f;
+		}
 	}
 	else
 	{
-		turretOut = -(TurretEncoder_Targ - TurretEncoder_Cur) * kpTurret;
+		TurretEncoder_Targ = Clamp_Target(TurretEncoder_Targ, -1221, 1221);
+		turretOut = -(((TurretEncoder_Targ - TurretEncoder_Cur) * kpTurret )+(FSign(TurretEncoder_Targ-TurretCommand_Cur)*.15f));
 	}
 
+	ArmTurret->Set(turretOut);
+}
+void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX,float cY,float calX,float calY)
+{
 
 	if(EnableTracking)
 	{
-		HandleTarget(cX,cY);
+		HandleTarget(cX,cY,calX,calY);
 	}
-	ArmTurret->Set(turretOut);
+
+	UpdateLift(ArmLift);
+	UpdateTurret(Turret);
+
+	float a = Shooter;
+	PrevBallTog = CurrentBallTog;
+	CurrentBallTog = Ball;
+
+	PrevResetInput = CurrentResetInput;
+	CurrentResetInput = Reset;
+
 	ArmShooter->Set(a);
 	ArmShooter2->Set(-a);
-	ArmLifter->Set(-ArmLifterOut);
 	if(CurrentResetInput && !PrevResetInput)
 	{
 		ResetPostion();
@@ -118,8 +208,21 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 		BallIn->Set(false);
 	}
 
-	//HandleSoftLimitsBoi(turretOut);
-
+}
+float ArmClass::Clamp_Target(float tar, float lowerlim, float upperlim)
+{
+	if(tar >= upperlim)
+	{
+		return upperlim;
+	}
+	else if(tar <= lowerlim)
+	{
+		return lowerlim;
+	}
+	else
+	{
+		return tar;
+	}
 }
 void ArmClass::SetTurret(int targ)
 {
@@ -154,68 +257,119 @@ void ArmClass::ResetTurret()
 {
 	SetTurret(0);
 }
-
-
-
-void ArmClass::HandleSoftLimitsBoi(float currentOutput)
+void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 {
-
-	if(TurretEncoder_Cur >= 1000)
+	if(fabs (centerX) >= 1 || fabs(centerY) >= 1)
 	{
-		if(currentOutput < 0)
-		{
-			ArmTurret->Set(0);
-		}
+		return;
 	}
-	if(TurretEncoder_Cur <= -1000)
+	else
 	{
-		if(currentOutput > 0)
-		{
-			ArmTurret->Set(0);
-		}
+		float moveByX_Degrees = 0;
+		float moveByY_Degrees = 0;
+
+		float moveByX_Ticks = 0;
+		float moveByY_Ticks = 0;
+
+		float xFOV = 76.00f;
+		float yFOV = 61.2f;
+
+		float ticksPerDegreeX = 1280/90.0f;
+		float ticksPerDegreeY = 5000/90.0f;
+
+		moveByX_Degrees = (centerX - calX) * (xFOV*.5f);
+		moveByY_Degrees = (centerY - calY) * (yFOV*.5f);
+
+		moveByX_Ticks = moveByX_Degrees * ticksPerDegreeX;
+		moveByY_Ticks = moveByY_Degrees * ticksPerDegreeY;
+
+		SetTurret(GetTurretEncoder()+(moveByX_Ticks* .50f));
+		SetArm(GetLifterEncoder()-(moveByY_Ticks* .25f));
 	}
-}
-void ArmClass::HandleTarget(float centerX,float centerY)
-{
-	float moveByX_Pixels = 0;
-	float moveByY_Pixels = 0;
+	/*
+	if(fabs (centerX) >= 640 || fabs(centerY) >= 480)
+	{
+		return;
+	}
+	else
+	{
+		float moveByX_Pixels = 0;
+		float moveByY_Pixels = 0;
 
-	float moveByX_Degrees = 0;
-	float moveByY_Degrees = 0;
+		float moveByX_Degrees = 0;
+		float moveByY_Degrees = 0;
 
-	float moveByX_Ticks = 0;
-	float moveByY_Ticks = 0;
+		float moveByX_Ticks = 0;
+		float moveByY_Ticks = 0;
 
-	float xFOV = 57.12f;
-	float yFOV = 44.42f;
+		//float xFOV = 57.12f;
+		//float yFOV = 44.42f;
+		float xFOV = 76.00f;
+		float yFOV = 61.2f;
 
-	float xPixels = 1280;
-	float yPixels = 720;
+		float xPixels = 320;
+		float yPixels = 240;
 
-	float degreesPerPixelX = xFOV / xPixels;
-	float degreesPerPixelY = yFOV / yPixels;
+		float degreesPerPixelX = xFOV / xPixels;
+		float degreesPerPixelY = yFOV / yPixels;
 
-	float ticksPerDegreeX = 5000/180.0f;
-	float ticksPerDegreeY = 2000/30.0f;
+		float ticksPerDegreeX = 1280/90.0f;
+		float ticksPerDegreeY = 5000/90.0f;
 
-	moveByX_Pixels = centerX - (xPixels/2);
-	moveByY_Pixels = centerY - (yPixels/2);
+		moveByX_Pixels = centerX - (xPixels/2);
+		moveByY_Pixels = centerY - (yPixels/2);
 
-	moveByX_Degrees = moveByX_Pixels * degreesPerPixelX;
-	moveByY_Degrees = moveByY_Pixels * degreesPerPixelY;
+		moveByX_Degrees = moveByX_Pixels * degreesPerPixelX;
+		moveByY_Degrees = moveByY_Pixels * degreesPerPixelY;
 
-	moveByX_Ticks = moveByX_Degrees * ticksPerDegreeX;
-	moveByY_Ticks = moveByY_Degrees * ticksPerDegreeY;
+		moveByX_Ticks = moveByX_Degrees * ticksPerDegreeX;
+		moveByY_Ticks = moveByY_Degrees * ticksPerDegreeY;
 
-	SetTurret(GetTurretEncoder()+moveByX_Ticks);
-	SetArm(GetLifterEncoder()+moveByY_Ticks);
+		SetTurret(GetTurretEncoder()+(moveByX_Ticks* .50f));
+		SetArm(GetLifterEncoder()-(moveByY_Ticks* .25f));
+
+	}
+	*/
 }
 void ArmClass::GotoShooting()
 {
-	SetArm(2200);
+	SetArm(3332);
+}
+void ArmClass::ResetEncoderLifter()
+{
+
+	LifterEncoder->Reset();
+	ResetArm();
+}
+void ArmClass::ResetEncoderTurret()
+{
+	TurretEncoder->Reset();
+	ResetTurret();
 }
 void ArmClass::SendData()
 {
 	SmartDashboard::PutNumber("TurretEncoder",TurretEncoder->Get());
-	SmartDashboard::PutNumber("LifterEncoder",LifterEncoder->Get());
+	SmartDashboard::PutNumber("TurretLiftEncoder",LifterEncoder->Get());
+}
+float ArmClass::FSign(float a)
+{
+	if(a >= 0)
+	{
+		return 1.0;
+	}
+	else
+	{
+		return -1.0;
+	}
+}
+bool ArmClass::TurretRoughlyCentered()
+{
+	if(fabs (GetTurretEncoder() <= 100))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

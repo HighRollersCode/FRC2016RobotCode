@@ -46,13 +46,11 @@ public:
 	bool CurrentPTOToggleTrig;
 	bool PrevPTOToggleTrig;
 
-
-
 	bool TransitionToPTO;
-		bool TransitionToDriveTrain;
-		int TransitionState;
-		Timer *transitionwait;
-		bool syncMotors;
+	bool TransitionToDriveTrain;
+	int TransitionState;
+	Timer *transitionwait;
+	bool syncMotors;
 	bool CurrentInnerShifterToggleTrig;
 	bool PrevInnerShifterToggleTrig;
 
@@ -61,6 +59,7 @@ public:
 	int ToggleStatePTO;
 	int inPTO;
 
+	bool disableInput;
 
 	bool CurrentOuterShifterToggleTrig;
 	bool PrevOuterShifterToggleTrig;

@@ -26,7 +26,7 @@ Drivetrain::Drivetrain()
 	RightDrive2 = new Talon(Tal_Drive_Right_2);
 	LeftEncoder = new Encoder(Encoder_Drive_Left_1, Encoder_Drive_Left_2, false,Encoder::EncodingType::k4X);
 	RightEncoder = new Encoder(Encoder_Drive_Right_1, Encoder_Drive_Right_2, false,Encoder::EncodingType::k4X);
-
+	disableInput = false;
 //	gyro = new Gyro(1);
 	//gyro->SetSensitivity(.007);
 	//gyro->InitGyro();
@@ -70,33 +70,36 @@ Drivetrain::Drivetrain()
 }
 void Drivetrain::StandardArcade(float Forward, float Turn)
 {
-	float l = Forward;
-	float r = -Turn;
-	if(inPTO == 1)
+	if(!disableInput)
 	{
-		if(l <= 0)
+		float l = Forward;
+		float r = -Turn;
+		if(inPTO == 1)
 		{
-			l = 0;
+			if(l <= 0)
+			{
+				l = 0;
+			}
 		}
-	}
-	if(syncMotors)
-	{
-		if(l <= 0)
+		if(syncMotors)
 		{
-			l = 0;
+			if(l <= 0)
+			{
+				l = 0;
+			}
+			LeftDrive->Set(l);
+			LeftDrive2->Set(l);
+			RightDrive->Set(-l);
+			RightDrive2->Set(-l);
 		}
-		LeftDrive->Set(l);
-		LeftDrive2->Set(l);
-		RightDrive->Set(-l);
-		RightDrive2->Set(-l);
-	}
 
-	else
-	{
-		LeftDrive->Set(l);
-		LeftDrive2->Set(l);
-		RightDrive->Set(r);
-		RightDrive2->Set(r);
+		else
+		{
+			LeftDrive->Set(l);
+			LeftDrive2->Set(l);
+			RightDrive->Set(r);
+			RightDrive2->Set(r);
+		}
 	}
 }
 void Drivetrain::ResetEncoders_Timers()
@@ -242,23 +245,54 @@ void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEna
 		{
 		case 0:
 			ToggleState = -1;
-			ToggleStateNeutral = 1;
+			//ToggleStateNeutral = 1;
 			ToggleStatePTO = -1;
 			transitionwait->Reset();
 			transitionwait->Start();
 			TransitionState = 1;
 			break;
 		case 1:
-			if(transitionwait->Get() >= 1.0f)
+			if(transitionwait->Get() >= .25f)
 			{
 				ToggleStatePTO = 1;
-				TransitionState = 3;
-				TransitionToPTO = false;
+				TransitionState = 2;
+				transitionwait->Reset();
+				transitionwait->Start();
 				inPTO = 1;
+				TransitionToPTO = false;
 			}
-
-
 			break;
+		case 2:
+			if(transitionwait->Get() >= .25f)
+			{
+				ResetEncoders_Timers();
+				LeftDrive->Set(.3f);
+				LeftDrive2->Set(.3f);
+				TransitionState = 3;
+				disableInput = true;
+			}
+			break;
+		case 3:
+			if(GetLeftEncoder() >= 90)
+			{
+				LeftDrive->Set(0.0f);
+				LeftDrive2->Set(0.0f);
+				ResetEncoders_Timers();
+				RightDrive->Set(-.3f);
+				RightDrive2->Set(-.3f);
+				TransitionState = 4;
+			}
+			break;
+		case 4:
+			if(GetRightEncoder() >= 90)
+			{
+				RightDrive->Set(0.0f);
+				RightDrive2->Set(0.0f);
+				TransitionState = 5;
+				TransitionToPTO = false;
+				disableInput = false;
+
+			}
 		}
 	}
 

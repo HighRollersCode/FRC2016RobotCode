@@ -44,7 +44,9 @@ public:
 	float TurretCommand_Cur;
 	float kpTurret;
 
-	void Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX, float cY);
+	void Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX, float cY,float calX,float calY);
+	void UpdateLift(float ArmLift);
+	void UpdateTurret(float Turret);
 	int GetTurretEncoder();
 	int GetLifterEncoder();
 	void ResetEncoders_Timers2();
@@ -53,10 +55,15 @@ public:
 	void ResetArm();
 	void ResetTurret();
 	void ResetPostion();
-	void HandleSoftLimitsBoi(float currentOutput);
-	void HandleTarget(float centerX, float centerY);
+
+	void HandleTarget(float centerX, float centerY,float calX, float calY);
 	void GotoShooting();
 	void SendData();
+	void ResetEncoderLifter();
+	void ResetEncoderTurret();
+	float FSign(float a);
+	float Clamp_Target(float tar, float lowerlim, float upperlim);
+	bool TurretRoughlyCentered();
 	ArmClass();
 	~ArmClass();
 };

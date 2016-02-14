@@ -36,7 +36,7 @@ public:
 	void GotoFloor();
 	void GotoIntake();
 	void GotoDefense();
-
+	void ResetEncoderLift();
 	int GetLiftEncoder();
 	void SetLift(int targ);
 	void SendData();
