@@ -17,16 +17,8 @@ public:
 	Talon *LeftDrive2;
 	Talon *RightDrive2;
 
-	Talon *ArmShooter;
-	Talon *ArmShooter2;
-	Talon *ArmLifter;
-	Talon *ArmTurret;
-
 	Solenoid *ShifterHigh;
 	Solenoid *ShifterLow;
-
-	Solenoid *BallPusher;
-	Solenoid *BallIn;
 
 	bool CurrentShifterToggleTrig;
 	bool PrevShifterToggleTrig;
