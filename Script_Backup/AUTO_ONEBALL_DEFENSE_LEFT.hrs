@@ -1,0 +1,19 @@
+IntakeEnablePID 1
+ArmEnablePID 1
+TurretEnablePID 1
+Arm -1 -795
+DriveTicksHeading 0.9 900 0.0
+DriveTicksHeading 0.3 500 0.0
+BrakeWait .01 -1
+IntakeLift -455
+Wait 2
+Arm -1 -3100
+Wait 1
+Arm 700 -1
+Wait 1
+
+Tracking 1
+WaitForTarget 3.0
+Tracking 0
+FullShot
+Wait 100

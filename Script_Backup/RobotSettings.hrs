@@ -1,0 +1,8 @@
+SetAuto 4
+DriveTrainSettings .007
+//.013
+EBrakeSettings .5
+
+//3 - tripletote autoconhook
+//4 - stealcans
+//5 - do nothing

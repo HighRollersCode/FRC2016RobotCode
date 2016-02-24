@@ -1,0 +1,53 @@
+
+//Distance from auto line is -260
+//Passing lowbar is -415
+//Driving to spot is -360 and -370
+//Arm lift is -2860
+//Turret is -1240
+//arm (back shot) = 2925
+//turret (back shot) = 760
+//new spot:
+//Drive through the LowBar to shooting spot
+IntakeEnablePID 1
+ArmEnablePID 1
+TurretEnablePID 1
+EnterIntakeMode
+Wait 2
+Arm -1 -5310
+Wait .5
+EnableArmPID 0
+EnableTurretPID 0
+DriveTicksHeading 0.5 625 0.0
+
+//Setting up Arm to shoot then track and fire
+ArmEnablePID 1
+TurretEnablePID 1
+Arm -1 -3100
+DriveTicksHeading 0.5 200 0.0
+Arm 770 -1
+
+Wait 3.0
+
+Tracking 1
+WaitForTarget 3.0
+Tracking 0
+FullShot
+Wait 100
+
+Wait .25
+DriveTicksHeading -0.5 -3000 0.0
+Wait 0.25
+
+//Setting up Arm to shoot then track and fire
+Arm -1 -500
+Wait 1
+Arm 600 -1
+Wait 1
+Tracking 1
+WaitForTarget 1
+Tracking 0
+FullShot
+Wait .5
+EnterIntakeMode
+
+

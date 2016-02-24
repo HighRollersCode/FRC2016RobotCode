@@ -1,0 +1,16 @@
+ArmEnablePID 1
+TurretEnablePID 1
+IntakeEnablePID 1
+IntakeLift -455
+Arm -1280 -2712
+Wait 2.0
+Targeting 1
+WaitForTarget 2.5
+Targeting 0
+FullShot
+Wait 3.0
+EnterIntakeMode
+Wait 1.0
+DriveTicksHeading 0.4 200 -10.0
+DriveTicksHeading 0.4 700 0
+Wait 20
