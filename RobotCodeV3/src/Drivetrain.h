@@ -12,6 +12,7 @@
 #include "IMUProtocol.h"
 #include "IMURegisters.h"
 #include "AHRS.h"
+//#include "Gyro.h"
 
 
 class Drivetrain
@@ -19,13 +20,12 @@ class Drivetrain
 
 public:
 	AHRS *imu;
-	SerialPort *serial_port;
 	bool first_iteration;
 
-	Talon *LeftDrive;
-	Talon *RightDrive;
-	Talon *LeftDrive2;
-	Talon *RightDrive2;
+	Victor *LeftDrive;
+	Victor *RightDrive;
+	Victor *LeftDrive2;
+	Victor *RightDrive2;
 
 	//Gyro *gyro;
 
@@ -66,21 +66,27 @@ public:
 
 	float mult;
 
+	float Ebrakemult;
+	int PrevBrakeBTN;
+	int CurrentBrakeBTN;
+
 	Drivetrain();
 	~Drivetrain();
 
 	int GetLeftEncoder();
 	int GetRightEncoder();
 	void ResetEncoders_Timers();
-
+	void Zero_Yaw();
 	void IMUCalibration();
 
 	float ComputeAngleDelta(float t);
+	void UpdateEBrake(int enable,int targ);
 
-	void StandardArcade(float Forward, float Turn);
+	void StandardTank(float Left, float Right);
+	void StandardArcade(float fwd,float Turn);
 	void Shifter_Update(bool DriveTrainShift, bool PTOEnable,bool syncEnable);
 	void PTO_Update(bool PTOEnable);
-	void Drive_Auton (float Forward, float Turn);
+	void Drive_Auton (float Left, float Right);
 
 	void Failsafe_Update();
 

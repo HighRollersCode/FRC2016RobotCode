@@ -33,8 +33,8 @@
 #define Sol_PTO_Enable 4
 #define Sol_PTO_Disable 5
 
-#define Sol_Ball_In 6
-#define Sol_Ball_Pusher 7
+#define Sol_Shot_Extend 6
+#define Sol_Shot_Retract 7
 
 
 #define Encoder_Drive_Left_1 0
@@ -50,5 +50,17 @@
 
 #define Encoder_Intake_Lift_1 8
 #define Encoder_Intake_Lift_2 9
+
+#define Preset_Intake_Floor -500
+#define Preset_Intake_Defense -10
+#define Preset_Intake_Intake -450
+
+#define Preset_Arm_Floor -5850
+#define Preset_Arm_Defense -795
+#define Preset_Arm_Intake -5760
+#define Preset_Arm_Back_Shot -2870
+#define Preset_Arm_Far_Shot -2870
+#define Preset_Arm_Tower_Shot -795
+#define Preset_Arm_Safe_Zone -5190
 
 #endif

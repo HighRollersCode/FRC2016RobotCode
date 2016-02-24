@@ -28,7 +28,7 @@ public:
 	float LifterCommand_Cur = 0.0f;
 	float LifterCommand_Prev = 0.0f;
 	float kpLifter = .001f;
-
+	PIDController *LiftPIDController;
 	//void Intake_In();
 	//void Intake_Out();
 	//void Intake_Off();
@@ -36,6 +36,10 @@ public:
 	void GotoFloor();
 	void GotoIntake();
 	void GotoDefense();
+	void IntakeOn();
+	void IntakeOff();
+	void IntakeOut();
+	//void GoToInEndGame();
 	void ResetEncoderLift();
 	int GetLiftEncoder();
 	void SetLift(int targ);

@@ -8,7 +8,6 @@
 #include "Intake.h"
 #include "Defines.h"
 
-
 IntakeClass::IntakeClass()
 {
 	Intake = new Talon(Tal_Intake_Roller);//Intake_PWM
@@ -19,7 +18,14 @@ IntakeClass::IntakeClass()
 	LiftEncoder_Targ = 0;
 	LifterCommand_Cur = 0.0f;
 	LifterCommand_Prev = 0.0f;
-	kpLifter = .004f;
+	kpLifter = .003f;
+
+//	.00075f
+	LiftEncoder->Reset();
+	LiftPIDController= new PIDController(.01f,.0005f,0,LiftEncoder,IntakeLift,.05f);
+	LiftPIDController->SetContinuous(false);
+	LiftPIDController->Disable();
+	LiftPIDController->SetAbsoluteTolerance(1);
 }
 
 void IntakeClass::Update(float intake, float intakelift)
@@ -33,7 +39,8 @@ void IntakeClass::Update(float intake, float intakelift)
 	LiftEncoder_Cur = GetLiftEncoder();
 	if((fabs(LifterCommand_Prev) > .1f) && (fabs(LifterCommand_Cur) < .1f))
 	{
-		LiftEncoder_Targ = LiftEncoder_Cur;
+		SetLift(LiftEncoder_Cur);
+		LiftPIDController->Enable();
 	}
 
 	if(fabs(LifterCommand_Cur) != 0)
@@ -41,13 +48,17 @@ void IntakeClass::Update(float intake, float intakelift)
 		LiftEncoder_Targ = -1.0f;
 		lifterOut = LifterCommand_Cur;
 		SmartDashboard::PutNumber("STATEE2",1);
+		LiftPIDController->Disable();
+		IntakeLift->Set(-lifterOut);
 	}
 	else
 	{
 		lifterOut = -(LiftEncoder_Targ - LiftEncoder_Cur) * kpLifter + .1f;
 		SmartDashboard::PutNumber("STATEE",0);
+
 	}
-	IntakeLift->Set(-lifterOut);
+	//IntakeLift->Set(-lifterOut);
+	SmartDashboard::PutData("IntakePID", LiftPIDController);
 }
 
 IntakeClass::~IntakeClass() {
@@ -67,20 +78,32 @@ void IntakeClass::Intake_Off()
 }*/
 void IntakeClass::GotoFloor()
 {
-	SetLift(0);
+	SetLift(Preset_Intake_Floor);
 }
 void IntakeClass::GotoIntake()
 {
-	//height here
-	SetLift(85);
+	SetLift(Preset_Intake_Intake);
 }
 void IntakeClass::GotoDefense()
 {
-	SetLift(495);
+	SetLift(Preset_Intake_Defense);
+}
+void IntakeClass::IntakeOn()
+{
+	Intake->Set(1);
+}
+void IntakeClass::IntakeOff()
+{
+	Intake->Set(0);
+}
+void IntakeClass::IntakeOut()
+{
+	Intake->Set(-.5f);
 }
 void IntakeClass::SetLift(int targ)
 {
 	LiftEncoder_Targ = targ;
+	LiftPIDController->SetSetpoint((float)targ);
 }
 int IntakeClass::GetLiftEncoder()
 {
@@ -91,6 +114,10 @@ void IntakeClass::ResetEncoderLift()
 	LiftEncoder->Reset();
 	SetLift(0);
 }
+//void IntakeClass::GoToInEndGame()
+//{
+	//SetLift()
+//}
 void IntakeClass::SendData()
 {
 	SmartDashboard::PutNumber("BeaterBarEncoder",LiftEncoder->Get());

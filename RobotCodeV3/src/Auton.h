@@ -11,25 +11,33 @@
 #include "WPILib.h"
 #include "Drivetrain.h"
 #include "Arm.h"
+#include "CollisionManager.h"
+#include "Intake.h"
+#include "TargetingSystemClient.h"
 
 class Auton
 {
 	public:
 		Drivetrain *DriveTrain;
 		ArmClass *Arm;
+		IntakeClass *Intake;
+		CollisionManager *Collision;
 		DriverStation *ds;
+		TargetingSystemClient *Targeting;
 		Timer *AutonTimer;
 		Timer *SendTimer;
-		float turningp;
+		//float turningp;
 		bool Abort;
 
 		bool Running();
 		void AutonWait(float Seconds);
 		void AutonWait2(float Seconds, int brake);
+		void AutonWaitForTarget(float Seconds);
 		bool Auto_System_Update();
 
-		void Auto_DriveTimer(float Forward, float Turn, float Ticks, float seconds);
-
+		void Auto_DriveTimer(float Forward, float Turn, float seconds);
+		void Auto_Intake_On();
+		void Auto_Intake_Off();
 		void Auto_GYROTURN(float heading);
 		void Auto_GYROTURN_TIMED(float heading, float seconds);
 		void Auto_GYROSTRAIGHT(float forward, float ticks, float desheading);
@@ -45,7 +53,10 @@ class Auton
 		(
 				Drivetrain *D,
 				ArmClass *A,
-				DriverStation *Ds
+				DriverStation *Ds,
+				IntakeClass *I,
+				CollisionManager *C,
+				TargetingSystemClient *T
 		);
 		~Auton();
 		void Auto_Start();

@@ -10,25 +10,24 @@
 
 Drivetrain::Drivetrain()
 {
-#if 0
-	serial_port = new SerialPort(56700,SerialPort::kMXP);
+#if USING_MXP
+	//uint8_t update_rate_hz = 50;
 	imu = new AHRS (SerialPort::Port::kMXP);
-	if(imu)
-	{
-		LiveWindow::GetInstance()->AddSensor("IMU", "Gyro", imu);
-	}
+//	imu = NULL;
+#else
+	imu = NULL;
 #endif
 
 	first_iteration = true;
-	LeftDrive = new Talon(Tal_Drive_Left_1);
-	LeftDrive2 = new Talon(Tal_Drive_Left_2);
-	RightDrive = new Talon(Tal_Drive_Right_1);
-	RightDrive2 = new Talon(Tal_Drive_Right_2);
+	LeftDrive = new Victor(Tal_Drive_Left_1);
+	LeftDrive2 = new Victor(Tal_Drive_Left_2);
+	RightDrive = new Victor(Tal_Drive_Right_1);
+	RightDrive2 = new Victor(Tal_Drive_Right_2);
 	LeftEncoder = new Encoder(Encoder_Drive_Left_1, Encoder_Drive_Left_2, false,Encoder::EncodingType::k4X);
 	RightEncoder = new Encoder(Encoder_Drive_Right_1, Encoder_Drive_Right_2, false,Encoder::EncodingType::k4X);
 	disableInput = false;
-//	gyro = new Gyro(1);
-	//gyro->SetSensitivity(.007);
+	//gyro = new Gyro(1);
+	//gyro->Calibrate(.007);
 	//gyro->InitGyro();
 	currentGyro = 0;
 	targetGyro = 0;
@@ -38,7 +37,7 @@ Drivetrain::Drivetrain()
 
 	NeutralEngaged = new Solenoid(Sol_Shifter_Outer_in);
 	NeutralDisEngaged = new Solenoid(Sol_Shifter_Outer_out);
-
+	Ebrakemult=.5f;
 	PTO0 = new Solenoid(Sol_PTO_Enable);
 	PTO1 = new Solenoid(Sol_PTO_Disable);
 
@@ -53,7 +52,7 @@ Drivetrain::Drivetrain()
 	PrevOuterShifterToggleTrig = false;
 
 
-	mult = .15f;
+	mult = -.15f;
 
 	ToggleState = 1;
 	ToggleStateNeutral = -1;
@@ -68,12 +67,12 @@ Drivetrain::Drivetrain()
 	transitionwait->Reset();
 	syncMotors = false;
 }
-void Drivetrain::StandardArcade(float Forward, float Turn)
+void Drivetrain::StandardTank(float Left, float Right)
 {
 	if(!disableInput)
 	{
-		float l = Forward;
-		float r = -Turn;
+		float l = Left;
+		float r = -Right;
 		if(inPTO == 1)
 		{
 			if(l <= 0)
@@ -102,6 +101,53 @@ void Drivetrain::StandardArcade(float Forward, float Turn)
 		}
 	}
 }
+
+void Drivetrain::StandardArcade(float fwd,float turn)
+{
+	float l = fwd + turn;
+	float r = fwd - turn;
+	StandardTank(l,r);
+}
+void Drivetrain::UpdateEBrake(int enable,int targ)
+{
+	PrevBrakeBTN = CurrentBrakeBTN;
+	CurrentBrakeBTN = enable;
+	if((CurrentBrakeBTN == 1)&&(PrevBrakeBTN == 0))
+	{
+		LeftEncoder->Reset();
+		RightEncoder->Reset();
+	}
+	if(enable == 1)
+	{
+		int LeftSideTicks = -LeftEncoder->Get();
+		//RightSideTicks = (int)(RightDriveEnc->Get()*2.5f);
+		int RightSideTicks = -RightEncoder->Get();
+		float Lerror = LeftSideTicks+targ;
+		float Rerror = RightSideTicks+targ;
+
+		float Leftout = -Lerror*Ebrakemult;
+		float Rightout = -Rerror*Ebrakemult;
+
+		LeftDrive->Set(-Leftout);
+	//	LeftDrive1->Set(Leftout);
+		RightDrive->Set(Rightout);
+	//	RightDrive1->Set(-Rightout);
+	}
+	if((CurrentBrakeBTN == 0) && (PrevBrakeBTN == 1))
+	{
+		LeftEncoder->Reset();
+
+		RightEncoder->Reset();
+	}
+}
+void Drivetrain::Zero_Yaw()
+{
+	if (imu != NULL)
+	{
+		imu->ZeroYaw();
+	}
+}
+
 void Drivetrain::ResetEncoders_Timers()
 {
 	LeftEncoder->Reset();
@@ -130,41 +176,13 @@ void Drivetrain::IMUCalibration()
 }
 float Drivetrain::ComputeAngleDelta(float t)
 {
-#if USING_MXP
 	if(imu == NULL)
 	{
-		return 0.0f;
+		//return 0.0f;
 	}
 	float cur = imu->GetYaw();
-	float err2 = t - imu->GetYaw();
-#else
-	float cur = gyro->get();
-	float err2 = t - gyro->get();
-#endif
-
-	if(t < 0 && cur > 0)
-	{
-		cur -= 360;
-	}
-	else if (t > 0 && cur < 0)
-	{
-		cur += 360;
-	}
-#if USING_MXP
-	float err1 = t - cur;
-	if(fabs(err1) < fabs(err2))
-	{
-		return err1;
-	}
-	else
-	{
-		return err2;
-	}
-#else
-
-		return err2;
-
-#endif
+	float err2 = t - cur;
+	return err2;
 }
 
 void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEnable)
@@ -359,9 +377,9 @@ void Drivetrain::PTO_Update(bool PTOenable)
 	}
 	*/
 }
-void Drivetrain::Drive_Auton(float Forward, float Turn)
+void Drivetrain::Drive_Auton(float Fwd, float Turn)
 {
-	StandardArcade(Forward,Turn);
+	StandardArcade(Fwd,Turn);
 }
 void Drivetrain::Failsafe_Update()
 {
@@ -372,7 +390,7 @@ void Drivetrain::SendData()
 	SmartDashboard::PutNumber("LeftEncoder",LeftEncoder->Get());
 	SmartDashboard::PutNumber("RightEncoder",RightEncoder->Get());
 	SmartDashboard::PutNumber("ToggleDT",ToggleState);
-		SmartDashboard::PutNumber("ToggleNeut",ToggleStateNeutral);
-		SmartDashboard::PutNumber("timer",transitionwait->Get());
-
+	SmartDashboard::PutNumber("ToggleNeut",ToggleStateNeutral);
+	SmartDashboard::PutNumber("timer",transitionwait->Get());
+	SmartDashboard::PutNumber("Yaw",  imu->GetYaw());
 }

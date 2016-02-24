@@ -11,6 +11,7 @@
 #include "WPILib.h"
 #include "Arm.h"
 #include "Intake.h"
+#include "Defines.h"
 class CollisionManager {
 public:
 
@@ -19,7 +20,9 @@ public:
 		Free = 0,
 		Shooting,
 		Intake,
-		Defensive
+		Defensive,
+		TowerShot//,
+		//EndGame
 	};
 	IntakeClass *IntakeRef;
 	ArmClass *ArmRef;
@@ -30,6 +33,10 @@ public:
 	bool IntakeState_Prev;
 	bool DefensiveState_Cur;
 	bool DefensiveState_Prev;
+	bool TowerShotState_Cur;
+	bool TowerShotState_Prev;
+	//bool EndGameState_Cur;
+	//bool EndGameState_Prev;
 
 	int state;
 	bool transitioning;
@@ -38,7 +45,7 @@ public:
 	virtual ~CollisionManager();
 
 	void EnterState(RobotMode mode);
-	void Update(bool ShootingState, bool IntakeState, bool DefensiveState);
+	void Update(bool ShootingState, bool IntakeState, bool DefensiveState, bool TowerShotState);//, bool EndGameState);
 };
 
 #endif /* SRC_COLLISIONMANAGER_H_ */

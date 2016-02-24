@@ -27,6 +27,7 @@ TargetingSystemClient::TargetingSystemClient() :
 	m_TargetDistance(0.0f),
 	m_TargetAngle(0.0f),
 	m_BankAngle(0.0f),
+	m_TargetArea(0.0f),
 	m_Connected(false),
 	m_SocketHandle(-1),
 	gotdata(false),
@@ -86,9 +87,10 @@ bool TargetingSystemClient::Connect(const char * server,unsigned short port)
 
 	m_Connected = true;
 
-//	printf("CRio->Panda Connected! server: %s port: %d\n",server,port);
+	printf("Jetson Connected! server: %s port: %d\n",server,port);
 	Send("0\r\n",4);
-	StartCalibrate();
+	Send("5\r\n",3);
+
 	m_CommTimer->Reset();
 	m_CommTimer->Start();
 	return true;
@@ -142,13 +144,13 @@ bool TargetingSystemClient::Update()
 	}
 
 	// Periodically make sure we ask for the current turret angle
-	if (m_CommTimer->Get() > 0.005f)
+	if (m_CommTimer->Get() > 0.0125f)
 	{
 		char buff[256];
 		sprintf(buff,"2 %f\n",m_TurretAngle);
 		//Send(buff,strlen(buff)+1);
 		Send("0\r\n",3);
-
+		Send("5\r\n",3);
 		m_CommTimer->Reset();
 	}
 
@@ -178,13 +180,32 @@ void TargetingSystemClient::Handle_Command(char*data)
 			Handle_Target(data);
 			break;
 		case '4':
-			Handle_Calibration(data);
+			//Handle_Calibration(data);
+			break;
+		case '5':
+			Handle_CalibrationRefresh(data);
 			break;
 	}
 }
+void TargetingSystemClient::FlipEnable()
+{
+	Send("2 1\r\n",5);
+}
+void TargetingSystemClient::FlipDisable()
+{
+	Send("2 0\r\n",5);
+}
+void TargetingSystemClient::EqualizeEnable()
+{
+	Send("6 1\r\n",5);
+}
+void TargetingSystemClient::EqualizeDisable()
+{
+	Send("6 0\r\n",5);
+}
 void TargetingSystemClient::Handle_Target(char *data)
 {
-	sscanf(data,"0 %f %f",&m_TargetDistance,&m_TargetAngle);
+	sscanf(data,"0 %f %f %f",&m_TargetDistance,&m_TargetAngle,&m_TargetArea);
 	gotdata = true;
 	SmartDashboard::PutString("Track Data", data);
 //	printf("Handle_Target: %f\n",m_TargetDistance);
@@ -192,6 +213,12 @@ void TargetingSystemClient::Handle_Target(char *data)
 void TargetingSystemClient::Handle_Calibration(char *data)
 {
 	sscanf(data,"4 %f %f",&xCal,&yCal);
+	gotdata = true;
+	//SmartDashboard::PutString("Calibration", data);
+}
+void TargetingSystemClient::Handle_CalibrationRefresh(char *data)
+{
+	sscanf(data,"5 %f %f",&xCal,&yCal);
 	gotdata = true;
 	SmartDashboard::PutString("Calibration", data);
 }

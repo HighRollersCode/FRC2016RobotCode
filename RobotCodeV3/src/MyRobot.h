@@ -6,10 +6,12 @@
 #include "DriveTrain.h"
 #include "Arm.h"
 #include "Intake.h"
+#include "Auton.h"
 #include <unistd.h>
 #include <stdio.h>
 #include "CollisionManager.h"
 #include "TargetingSystemClient.h"
+#include "HRscript.h"
 
 
 
@@ -17,9 +19,9 @@ class RobotDemo: public SampleRobot
 {
 public:
 
-	float commandForward;
+	float commandLeft;
 	float commandArmShooter;
-	float commandTurn;
+	float commandRight;
 	float commandLift;
 	float commandTurret;
 	float commandintake;
@@ -32,25 +34,38 @@ public:
 	ArmClass *Arm;
 	CollisionManager *CollManager;
 	TargetingSystemClient *TargClient;
+	Auton *AutonomousControl;
 
 	Timer *ReConnectTimer;
+	Timer *SmartDashTimer;
+	Timer *SafeTimer;
 	int connectionattempts;
+
+	bool JetsonConnected;
+	bool prevIntakeArm;
+	bool curIntakeArm;
 
 	RobotDemo(void);
 	~RobotDemo(void);
 
 	static RobotDemo * Get() { return TheRobot; }
 
+	void Disabled();
 	void Autonomous(void);
 	void UpdateInputs();
+	void Init_Script_System();
+	void Load_Scripts();
 	void OperatorControl(void);
+	void Send_Smartdashboard_Data(void);
+	void LightUpdate();
 
 	void Shutdown_Jetson(void);
-
 	void Jetson_Connection();
 
+	int Auto_Index;
 protected:
 
+	HrScriptSystemClass * m_ScriptSystem;
 	static RobotDemo * TheRobot;
 };
 
