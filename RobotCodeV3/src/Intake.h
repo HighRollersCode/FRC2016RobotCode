@@ -24,12 +24,15 @@ public:
 	Talon *IntakeLift;
 	ResettableEncoderClass *LiftEncoder;
 
+	DigitalInput *LimitSwitch;
+
 	int LiftEncoder_Cur = 0;
 	int LiftEncoder_Targ = 0;
 
 	float LifterCommand_Cur = 0.0f;
 	float LifterCommand_Prev = 0.0f;
 	float kpLifter = .001f;
+	float Validate_Lift_Command(float cmd);
 	PIDController *LiftPIDController;
 	//void Intake_In();
 	//void Intake_Out();

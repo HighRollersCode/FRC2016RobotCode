@@ -69,7 +69,7 @@ public:
 	int GetTurretEncoder();
 	int GetLifterEncoder();
 	void ResetEncoders_Timers2();
-	void SetTurret(int targ);
+	void SetTurret(int targ);//,bool relative = false);
 	void SetArm(int targ);
 	void GoToArm();
 	void ResetArm();

@@ -65,6 +65,7 @@
 #define Preset_Arm_Safe_Zone -5190
 #define Preset_Arm_Down -6030		// value to use when resetting the arm lift encoder in-match
 
+#define Intake_Lift_Limit_Switch 10
 
 //
 //  Encoder values to limit the arm movement to keep the arm within the 15" envelope around the robot
@@ -87,7 +88,9 @@
 #define ARM_LIFT_MIN_WHEN_SIDEWAYS  	20.0f
 #define ARM_LIFT_MAX_WHEN_SIDEWAYS		150.0f
 
-#define MIN_TURRET_CMD 0.1f
+#define INTAKE_LIFT_MIN 10.0f
+
+#define MIN_TURRET_CMD 0.19f
 
 #endif
 

@@ -8,11 +8,50 @@
 #include "Intake.h"
 #include "Defines.h"
 
+
+class IntakeLiftVictorClass : public Victor
+{
+public:
+	explicit IntakeLiftVictorClass(uint32_t channel,IntakeClass * intake);
+	virtual void Set(float value, uint8_t syncGroup = 0) override;
+	virtual void PIDWrite(float output) override;
+
+protected:
+	IntakeClass * m_Intake;
+};
+
+
+IntakeLiftVictorClass::IntakeLiftVictorClass(uint32_t channel,IntakeClass * intake) :
+			Victor(channel),
+			m_Intake(intake)
+
+{
+}
+void IntakeLiftVictorClass::Set(float value, uint8_t syncGroup)
+{
+	value = m_Intake->Validate_Lift_Command(value);
+	Victor::Set(value,syncGroup);
+}
+void IntakeLiftVictorClass::PIDWrite(float value)
+{
+	value = m_Intake->Validate_Lift_Command(value);
+	Victor::Set(value);
+}
+
+
+
+
+
+
+
+
 IntakeClass::IntakeClass()
 {
 	Intake = new Talon(Tal_Intake_Roller);//Intake_PWM
 	IntakeLift = new Talon(Tal_Intake_Lift);//IntakeLift_PWM
 	LiftEncoder = new ResettableEncoderClass(Encoder_Intake_Lift_1, Encoder_Intake_Lift_2);
+
+	LimitSwitch = new DigitalInput(Intake_Lift_Limit_Switch);
 
 	LiftEncoder_Cur = 0;
 	LiftEncoder_Targ = 0;
@@ -56,6 +95,7 @@ void IntakeClass::Update(float intake, float intakelift)
 	}
 
 	SmartDashboard::PutData("IntakePID", LiftPIDController);
+	SmartDashboard::PutBoolean("IntakeLimit", LimitSwitch->Get());
 }
 
 IntakeClass::~IntakeClass() {
@@ -110,4 +150,20 @@ void IntakeClass::ResetEncoderLiftDown()
 void IntakeClass::SendData()
 {
 	SmartDashboard::PutNumber("BeaterBarEncoder",LiftEncoder->Get());
+}
+float IntakeClass::Validate_Lift_Command(float cmd)
+{
+#if 0
+	int lift = GetLiftEncoder();
+	if (limitswitch)   // if cmd is moving turret toward lower angle...
+	{
+		if (lift < INTAKE_LIFT_MIN)  // and it is past the lowest angle allowed
+		{
+			//float error = ARM_TURRET_MIN_ENCODER - tur;
+			// BAD!
+			return 0.0f;
+		}
+	}
+#endif
+	return cmd;
 }

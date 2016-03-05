@@ -47,7 +47,7 @@ bool TargetingSystemClient::Connect(const char * server,unsigned short port)
 	int status;
 	sockaddr_in server_addr;
 	//hostent *server_hostent;
-	int addr_size;
+	//int addr_size;
 
 	// int the select system
 //	selectInit(2048);
@@ -59,7 +59,7 @@ bool TargetingSystemClient::Connect(const char * server,unsigned short port)
 		return false;
 	}
 
-	addr_size = sizeof(server_addr);
+	//addr_size = sizeof(server_addr);
 	memset(&server_addr,0,sizeof(server_addr));
 
 	server_addr.sin_family = AF_INET;
@@ -125,7 +125,7 @@ bool TargetingSystemClient::Update()
 	int status = select(m_SocketHandle+1,&read_set,NULL,NULL,&timeout);
 	if (status == -1)
 	{
-	//	printf("ERROR: select failed. socket: %d errno: %d",m_SocketHandle,errno);
+		printf("ERROR: select failed. socket: %d errno: %d",m_SocketHandle,errno);
 		return false;
 	}
 
@@ -141,7 +141,7 @@ bool TargetingSystemClient::Update()
 		}
 		else
 		{
-			msg_buffer[512] = 0; // make sure msg_buffer can never overflow
+			msg_buffer[4096] = 0; // make sure msg_buffer can never overflow
 			//printf("recv: %s\n",msg_buffer);
 			Handle_Incoming_Data(msg_buffer,sizeof(msg_buffer));
 		}
@@ -164,6 +164,12 @@ bool TargetingSystemClient::Update()
 void TargetingSystemClient::Handle_Incoming_Data(char * data,int size)
 {
 	//printf("Handle_Incoming_Data: %s \n",data);
+	// check if we ever get a command which is incomplete, i.e. doesn't have a /n
+	char * endln = strchr(data,'\n');
+	if (endln == NULL)
+	{
+		printf("ERROR: Targetting system got partial command!  %s\r\n",data);
+	}
 
 	char *cmd = strtok(data,"\n");
 	while(cmd !=NULL)
@@ -222,7 +228,6 @@ void TargetingSystemClient::Handle_Calibration(char *data)
 }
 void TargetingSystemClient::Handle_CalibrationRefresh(char *data)
 {
-
 	sscanf(data,"5 %f %f",&xCal,&yCal);
 	gotdata = true;
 	SmartDashboard::PutString("Calibration", data);

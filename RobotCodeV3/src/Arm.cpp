@@ -161,7 +161,7 @@ isauto = false;
 	//245
 	TurretPIDController->SetContinuous(false);
 	TurretPIDController->Disable();
-	TurretPIDController->SetAbsoluteTolerance(1);
+	//TurretPIDController->SetAbsoluteTolerance(1);
 	TurretPIDController->SetInputRange(-1350,1350);
 	TurretPIDController->SetOutputRange(-.75f,.75f);
 	TunerPIDController = new PIDController(0,0,0,TurretEncoder,ArmTurret,.01f);
@@ -282,18 +282,18 @@ void ArmClass::UpdateTurret(float Turret)
 
 	if(fabs(TurretPIDController->GetError()) < 200)
 	{
-		TurretPIDController->SetPID(TurretPIDController->GetP(),TunerPIDController->GetI(),TurretPIDController->GetD());
+		TurretPIDController->SetPID(TurretPIDController->GetP(),0,0);//TurretPIDController->GetD());
 	}
 	else
 	{
-		TurretPIDController->SetPID(TurretPIDController->GetP(),0,TurretPIDController->GetD());
+		TurretPIDController->SetPID(TurretPIDController->GetP(),0,0);//TurretPIDController->GetD());
 	}
 	if((fabs(TurretCommand_Prev) > .1f) && (fabs(TurretCommand_Cur) < .1f))
 	{
 		//SetTurret(TurretEncoder_Cur);
 		//TurretPIDController->Disable();
 	}
-	if(fabs(TurretCommand_Cur) > .1f)
+	if(fabs(TurretCommand_Cur) > .2f)
 	{
 		TurretPIDController->Disable();
 		/*if(fabs(TurretEncoder_Cur) >= 800)
@@ -520,11 +520,14 @@ float ArmClass::Clamp_Target(float tar, float lowerlim, float upperlim)
 		return tar;
 	}
 }
-void ArmClass::SetTurret(int targ)
+void ArmClass::SetTurret(int targ)//,bool relative = false)
 {
 	TurretEncoder_Targ = targ;
-	TurretEncoder_Targ = Clamp_Target(TurretEncoder_Targ, -1221, 1221);
+//	TurretEncoder_Targ = Clamp_Target(TurretEncoder_Targ, -1221, 1221);
+	//if(!relative)
+	//{
 	TurretPIDController->SetSetpoint(TurretEncoder_Targ);
+	//}
 }
 int ArmClass::GetTurretEncoder()
 {
@@ -581,7 +584,7 @@ void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 		float ticksPerDegreeY = 5000/90.0f;
 		//centerX = Clamp_Target(centerX,-.8f,.8f);
 
-		moveByX_Degrees = (centerX - calX) * (xFOV*.5f);
+		moveByX_Degrees = (calX - centerX) * (xFOV*.5f);
 		moveByY_Degrees = (centerY - calY) * (yFOV*.5f);
 
 		LastMoveByDegreesX = moveByX_Degrees;
@@ -595,8 +598,11 @@ void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 			moveByX_Ticks *=-1.0f;
 			moveByY_Ticks *=-1.0f;
 		}
-		SetTurret(GetTurretEncoder()+(moveByX_Ticks* 1.0f)); //.85
+
+		SetTurret(GetTurretEncoder()-(moveByX_Ticks* 1.0f)); //.85
 		SetArm(GetLifterEncoder()+(moveByY_Ticks* 1.0f));
+		SmartDashboard::PutNumber("MoveByTicks",moveByX_Ticks);
+		SmartDashboard::PutNumber("TurretError",TurretPIDController->GetError());
 	}
 	/*
 	if(fabs (centerX) >= 640 || fabs(centerY) >= 480)
@@ -677,6 +683,7 @@ void ArmClass::SendData()
 {
 	SmartDashboard::PutNumber("ArmTurretEncoder",TurretEncoder->Get());
 	SmartDashboard::PutNumber("ArmLiftEncoder",LifterEncoder->Get());
+	SmartDashboard::PutNumber("TURRCOM",ArmTurret->Get());
 }
 float ArmClass::FSign(float a)
 {
@@ -731,14 +738,20 @@ float ArmClass::Validate_Turret_Command(float cmd, bool ispidcmd)
 
 	if(ispidcmd)
 	{
-		if(cmd > 0.0f)
+		//randon .002 commands...
+		if(cmd > 0.003f)
 		{
 			cmd = fmaxf(cmd, MIN_TURRET_CMD);
 		}
-		else if (cmd < 0.0f)
+		else if (cmd < -.003f)
 		{
 			cmd = fminf(cmd, -MIN_TURRET_CMD);
 		}
+		else if (cmd < .003f && cmd > -.003)
+		{
+			cmd = 0;
+		}
+
 	}
 	return cmd;
 }
