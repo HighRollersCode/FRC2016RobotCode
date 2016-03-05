@@ -46,7 +46,7 @@ RobotDemo::RobotDemo(void)
 	CollManager = new CollisionManager(Intake, Arm);
 	printf("Basic Initialization\r\n");
 	TargClient = new TargetingSystemClient();
-	TargClient->Connect("10.9.87.10",9870);
+	TargClient->Connect(JETSON_IP,JETSON_PORT);
 	printf("TargClient Initialized\r\n");
 	AutonomousControl = new Auton(DriveTrain,Arm,&DriverStation::GetInstance(),Intake,CollManager,TargClient);
 
@@ -67,17 +67,23 @@ RobotDemo::RobotDemo(void)
 	prevIntakeArm = false;
 	curIntakeArm = false;
 
+	ConnectionPrevTog = false;
+	ConnectionCurTog = false;
+
+	DisConnectionPrevTog = false;
+	DisConnectionCurTog = false;
+
 	Auto_Index = 0;
 	m_ScriptSystem = 0;
 	Init_Script_System();
 
 	int connectionattempts = 0;
 	printf("Will block to connect... \r\n");
-	while ((connectionattempts < 3) && (TargClient->Get_Connected()  == false))
+	while ((connectionattempts < 5) && (TargClient->Get_Connected()  == false))
 	{
 		if(ReConnectTimer->Get() > 2)
 		{
-			TargClient->Connect("10.9.87.10",9870);
+			TargClient->Connect(JETSON_IP,JETSON_PORT);
 			ReConnectTimer->Reset();
 			connectionattempts++;
 		}
@@ -107,7 +113,7 @@ void RobotDemo::Jetson_Connection()
 {
 	if(TargClient->Get_Connected() == false && ReConnectTimer->Get() > 5)
 	{
-		TargClient->Connect("10.9.87.10",9870);
+		TargClient->Connect(JETSON_IP,JETSON_PORT);
 		ReConnectTimer->Reset();
 	}
 	JetsonConnected = true;
@@ -262,8 +268,9 @@ void RobotDemo::Send_Smartdashboard_Data(void)
 		DriveTrain->SendData();
 		Intake->SendData();
 		Arm->SendData();
+		SmartDashboard::PutBoolean("Jetson Connection", TargClient->Get_Connected());
 		SmartDashTimer->Reset();
-		SmartDashboard::PutBoolean("Jetson Connection", JetsonConnected);
+
 	}
 }
 
@@ -278,15 +285,17 @@ void RobotDemo::OperatorControl(void)
 	CollManager->transitioning = false;
 	CollManager->currentMode = CollisionManager::Free;
 	Arm->isauto = false;
+
 	while (IsOperatorControl())
 	{
+		// If we are disabled in OperatorControl, make sure the jetson connection is live
+		// This will only retry the connection once every few seconds.
+		if (IsDisabled())
+		{
+			Jetson_Connection();
+		}
+
 		Send_Smartdashboard_Data();
-
-	     //auto grip = NetworkTable::GetTable("grip");
-
-		/* Get published values from GRIP using NetworkTables */
-		//auto centers = grip->get("targets/centers", llvm::ArrayRef<double>());
-
 		UpdateInputs();
 		TargClient->Update();
 		SmartDashboard::PutNumber("INTAKELIFT",commandintakelift);
@@ -299,7 +308,7 @@ void RobotDemo::OperatorControl(void)
 		Intake->Update(-commandintake, -commandintakelift);
 		DriveTrain->Shifter_Update(leftStick->GetTrigger(), leftStick->GetRawButton(10),leftStick->GetRawButton(11));
 		DriveTrain->PTO_Update(leftStick->GetRawButton(4));
-		CollManager->Update(turretStick->GetRawButton(4), rightStick->GetRawButton(4), leftStick->GetRawButton(5), turretStick->GetRawButton(5));
+		CollManager->Update(turretStick->GetRawButton(3), rightStick->GetRawButton(4), leftStick->GetRawButton(5), turretStick->GetRawButton(5));
 		if(turretStick->GetRawButton(11))
 		{
 			TargClient->StartCalibrate();
@@ -311,15 +320,39 @@ void RobotDemo::OperatorControl(void)
 
 		if (turretStick->GetRawButton(10))
 		{
+			// BEWARE! this code-path for 'emergency' use IN-MATCH and assumes the arm and intakes are in the DOWN position.
 			Arm->ResetEncoderTurret();
-			Arm->ResetEncoderLifter();
-			Intake->ResetEncoderLift();
+
+			// Old RESET, arm up, intake up
+			//Arm->ResetEncoderLifter();
+			//Intake->ResetEncoderLift();
+
+			// New RESET, arm down, intake down
+			Arm->ResetEncoderLifterDown();
+			Intake->ResetEncoderLiftDown();
+
 			DriveTrain->ResetEncoders_Timers();
 			DriveTrain->imu->ZeroYaw();
 		}
+		ConnectionUpdate();
 		LightUpdate();
 		Wait(0.001);
 	}
+}
+void RobotDemo::ConnectionUpdate()
+{
+	ConnectionPrevTog = ConnectionCurTog;
+	ConnectionCurTog = rightStick->GetRawButton(8);
+	DisConnectionPrevTog = DisConnectionCurTog;
+	DisConnectionCurTog = rightStick->GetRawButton(9);
 
+	if((!ConnectionPrevTog) && (ConnectionCurTog))
+	{
+		TargClient->Connect(JETSON_IP,JETSON_PORT);
+	}
+	if((!DisConnectionPrevTog) && (DisConnectionCurTog))
+	{
+		TargClient->Disconnect();
+	}
 }
 START_ROBOT_CLASS(RobotDemo);

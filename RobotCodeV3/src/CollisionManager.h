@@ -38,6 +38,8 @@ public:
 	//bool EndGameState_Cur;
 	//bool EndGameState_Prev;
 
+	Timer *PresetTimer;
+
 	int state;
 	bool transitioning;
 	RobotMode currentMode;

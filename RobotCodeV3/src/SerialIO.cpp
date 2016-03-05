@@ -39,7 +39,7 @@ SerialPort *SerialIO::ResetSerialPort()
     if (serial_port != 0) {
         try {
             delete serial_port;
-        } catch (std::exception  ex) {
+        } catch (std::exception  &ex) {
             // This has been seen to happen before....
         }
         serial_port = 0;
@@ -57,7 +57,7 @@ SerialPort *SerialIO::GetMaybeCreateSerialPort()
             serial_port->SetTimeout(1.0);
             serial_port->EnableTermination('\n');
             serial_port->Reset();
-        } catch (std::exception ex) {
+        } catch (std::exception &ex) {
             /* Error opening serial port. Perhaps it doesn't exist... */
             serial_port = 0;
         }
@@ -131,7 +131,7 @@ void SerialIO::Run() {
         serial_port->EnableTermination('\n');
         serial_port->Flush();
         serial_port->Reset();
-    } catch (std::exception ex) {
+    } catch (std::exception &ex) {
         printf("SerialPort Run() Port Initialization Exception:  %s\n", ex.what());
     }
 
@@ -457,7 +457,7 @@ void SerialIO::Run() {
                     ResetSerialPort();
                 }
             }
-        } catch (std::exception ex) {
+        } catch (std::exception &ex) {
             // This exception typically indicates a Timeout, but can also be a buffer overrun error.
             stream_response_received = false;
             timeout_count++;

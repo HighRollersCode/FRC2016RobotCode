@@ -45,6 +45,12 @@ public:
 	bool prevIntakeArm;
 	bool curIntakeArm;
 
+	bool ConnectionPrevTog;
+	bool ConnectionCurTog;
+	bool DisConnectionPrevTog;
+	bool DisConnectionCurTog;
+
+
 	RobotDemo(void);
 	~RobotDemo(void);
 
@@ -58,6 +64,7 @@ public:
 	void OperatorControl(void);
 	void Send_Smartdashboard_Data(void);
 	void LightUpdate();
+	void ConnectionUpdate();
 
 	void Shutdown_Jetson(void);
 	void Jetson_Connection();

@@ -20,6 +20,10 @@ CollisionManager::CollisionManager(IntakeClass *intake, ArmClass *arm ) {
 	//EndGameState_Cur = false;
 	//EndGameState_Prev = false;
 
+	PresetTimer = new Timer();
+	PresetTimer->Reset();
+	PresetTimer->Start();
+
 	state = 0;
 	transitioning = false;
 	currentMode = RobotMode::Free;
@@ -123,27 +127,51 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 		}
 		else if(currentMode == RobotMode::Shooting)
 		{
+			PresetTimer->Reset();
+			PresetTimer->Start();
 			switch(state)
 			{
 				case 0 :
-					IntakeRef->LiftPIDController->Enable();
-					//Reset Intske
-					ArmRef->ArmPIDController->Enable();
-					IntakeRef->GotoIntake();
 					state = 1;
+					IntakeRef->LiftPIDController->Enable();
+					//Reset Intake
+					ArmRef->ArmPIDController->Enable();
+					ArmRef->TurretPIDController->Enable();
+					IntakeRef->GotoIntake();
 					break;
 				case 1 :
 					//Reset Turret and wait Intake
 					if(fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 20)
 					{
 						state = 2;
-						ArmRef->GotoShooting();
-						ArmRef->ArmPIDController->Disable();
-						transitioning = false;
-						IntakeRef->LiftPIDController->Disable();
+						ArmRef->ResetTurret();
 					}
-
 					break;
+				case 2 :
+					if(fabs(ArmRef->GetTurretEncoder()) <= 5)
+					{
+						state = 3;
+						ArmRef->GotoShooting();
+					}
+					break;
+				case 3 :
+					if(fabs(ArmRef->GetLifterEncoder() - Preset_Arm_Far_Shot) <= 20)
+					{
+						PresetTimer->Reset();
+						PresetTimer->Start();
+						state = 4;
+					}
+					break;
+				case 4 :
+					if(PresetTimer->Get() > 10)
+					{
+						state = 5;
+						ArmRef->ArmPIDController->Disable();
+						//	IntakeRef->LiftPIDController->Disable();
+						ArmRef->TurretPIDController->Disable();
+						transitioning = false;
+
+					}
 				}
 			}
 		else if(currentMode == RobotMode::Defensive)
@@ -164,7 +192,6 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 					{
 						state = 2;
 						ArmRef->SetArm(Preset_Arm_Defense);
-
 					}
 
 					break;
@@ -186,8 +213,6 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 					}
 					break;
 			}
-
-
 		}
 		else if(currentMode == RobotMode::TowerShot)
 		{
@@ -195,20 +220,38 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 			{
 				case 0 :
 					IntakeRef->LiftPIDController->Enable();
-					//Reset Intske
+					ArmRef->ArmPIDController->Enable();
+					//Move Intake to Intake position
 					IntakeRef->GotoIntake();
 					state = 1;
 					break;
 				case 1 :
-					//Reset Turret and wait Intake
+					//Reset Turret
 					if(fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 20)
 					{
 						state = 2;
-						ArmRef->GotoTowerShot();
-						transitioning = false;
-						IntakeRef->LiftPIDController->Disable();
+						ArmRef->ResetTurret();
+						transitioning = 2;
 					}
-
+					break;
+				case 2 :
+					//Move Arm to Tower Shot
+					if(fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 20)
+					{
+						state = 3;
+						ArmRef->GotoTowerShot();
+						transitioning = 3;
+					}
+					break;
+				case 3 :
+					//Reset PID Controllers
+					if(fabs(ArmRef->GetLifterEncoder() - Preset_Arm_Tower_Shot) <= -1870)
+					{
+						state = 4;
+						IntakeRef->LiftPIDController->Disable();
+						ArmRef->ArmPIDController->Disable();
+						transitioning = false;
+					}
 					break;
 				}
 			}
@@ -243,6 +286,6 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 			}
 			*/
 
+
 	}
 }
-

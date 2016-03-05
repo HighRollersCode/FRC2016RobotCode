@@ -18,6 +18,7 @@
 //#include "hostLib.h"
 //#include "ioLib.h"
 #include "string.h"
+#include "errno.h"
 
 //#include "selectlib.h"
 
@@ -77,10 +78,13 @@ bool TargetingSystemClient::Connect(const char * server,unsigned short port)
 		}
 	}
 */
+
+	printf("Trying to connect to Jetson. server: %s port: %d\n",server,port);
+
 	status = connect(m_SocketHandle,(struct sockaddr*)&server_addr,sizeof(server_addr));
 	if (status == -1)
 	{
-		printf("ERROR: connect failed\n");
+		perror("ERROR: connect failed:\n");
 		close(m_SocketHandle);
 		return false;
 	}
@@ -133,7 +137,7 @@ bool TargetingSystemClient::Update()
 		if (bytes_in == 0)
 		{
 			m_Connected = false;
-			//printf("Disconnected!");
+			printf("Targeting Client Disconnected!");
 		}
 		else
 		{
@@ -218,25 +222,44 @@ void TargetingSystemClient::Handle_Calibration(char *data)
 }
 void TargetingSystemClient::Handle_CalibrationRefresh(char *data)
 {
+
 	sscanf(data,"5 %f %f",&xCal,&yCal);
 	gotdata = true;
 	SmartDashboard::PutString("Calibration", data);
 }
+void TargetingSystemClient::SmartDashboardUpdate()
+{
+	SmartDashboard::PutBoolean("Connected",m_Connected);
+}
+void TargetingSystemClient::Disconnect()
+{
+	printf("Disconnect \n");
+	close(m_SocketHandle);
+	m_Connected = false;
+	m_SocketHandle = -1;
+}
 bool TargetingSystemClient::Send(const char * data_out,int size)
 {
-	int status;
-
-	if ((m_Connected == true) && (size > 0))
+	try
 	{
-//		printf("send: %s\n",data_out);
-		status = send(m_SocketHandle,data_out,size,0);
-		if (status == -1)
+		int status;
+		if ((m_Connected == true) && (size > 0))
 		{
-			//printf("ERROR: send failed. status: %d  errno: %d",status,errno);
-			return false;
+			//printf("send: %s\n",data_out);
+			status = send(m_SocketHandle,data_out,size,MSG_NOSIGNAL);
+			if (status == -1)
+			{
+				//printf("ERROR: send failed. status: %d  errno: %d",status,errno);
+				return false;
+			}
+			return true;
 		}
-		return true;
-	}
 
-	return false;
+		return false;
+	}
+	catch (...)
+	{
+		printf("Crash at send, Check Jetson \n");
+		return false;
+	}
 }

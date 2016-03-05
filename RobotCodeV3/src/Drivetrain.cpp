@@ -44,6 +44,9 @@ Drivetrain::Drivetrain()
 	CurrentPTOToggleTrig = false;
 	PrevPTOToggleTrig = false;
 
+	CurrentBrakeBTN = 0;
+	PrevBrakeBTN = 0;
+
 	CurrentInnerShifterToggleTrig = false;
 	PrevInnerShifterToggleTrig = false;
 	ToggleState = -1;
@@ -210,7 +213,7 @@ void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEna
 
 	if(ToggleState == 1)
 	{
-		//Highgear
+		//HighGear
 		NormalShiftHigh->Set(true);
 		NormalShiftLow->Set(false);
 	}
@@ -383,7 +386,6 @@ void Drivetrain::Drive_Auton(float Fwd, float Turn)
 }
 void Drivetrain::Failsafe_Update()
 {
-
 }
 void Drivetrain::SendData()
 {

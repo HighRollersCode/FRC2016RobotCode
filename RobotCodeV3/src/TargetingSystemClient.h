@@ -15,6 +15,9 @@
 #include "Timer.h"
 #include "WPILib.h"
 
+#define JETSON_IP "10.9.87.10"
+#define JETSON_PORT 5800
+
 class TargetingSystemClient
 {
 
@@ -41,6 +44,8 @@ public:
 	void FlipDisable();
 	void EqualizeEnable();
 	void EqualizeDisable();
+	void SmartDashboardUpdate();
+	void Disconnect();
 
 protected:
 	void Handle_Incoming_Data(char * data,int size);

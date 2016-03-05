@@ -54,13 +54,40 @@
 #define Preset_Intake_Floor -500
 #define Preset_Intake_Defense -10
 #define Preset_Intake_Intake -450
+#define Preset_Intake_Down -500     // value to use when reseting the intake encoder in-match
 
 #define Preset_Arm_Floor -5850
 #define Preset_Arm_Defense -795
 #define Preset_Arm_Intake -5760
-#define Preset_Arm_Back_Shot -2870
-#define Preset_Arm_Far_Shot -2870
-#define Preset_Arm_Tower_Shot -795
+#define Preset_Arm_Back_Shot -2826
+#define Preset_Arm_Far_Shot -2826
+#define Preset_Arm_Tower_Shot -1868
 #define Preset_Arm_Safe_Zone -5190
+#define Preset_Arm_Down -6030		// value to use when resetting the arm lift encoder in-match
+
+
+//
+//  Encoder values to limit the arm movement to keep the arm within the 15" envelope around the robot
+//
+
+// The turret is zero'd when it is centered pointing forward.  It can move the same distance to the
+// left and to the right.
+#define ARM_TURRET_DEGREES_PER_TICK (90.0f / 1210.0f)
+#define ARM_TURRET_MIN_ENCODER	-1100    //-1400 changed to -1100 to prevent hitting the climbing arm
+#define ARM_TURRET_MAX_ENCODER	1200
+
+#define ARM_TURRET_CORRECTION_P 0.001f   // motor power per tick to correct invalid turret configurations
+#define ARM_LIFT_CORRECTION_P 0.05f	    // motor power per degree to correct invalid lift configurations
+
+#define ARM_LIFT_DEGREES_PER_TICK   (90.0f / 5000.0f)
+#define ARM_LIFT_MIN_WHEN_CENTERED 		-20.5f
+#define ARM_LIFT_MAX_WHEN_CENTERED 		140.8f
+#define ARM_LIFT_MIN_WHEN_FWD 			15.0f
+#define ARM_LIFT_MAX_WHEN_FWD 			140.8f
+#define ARM_LIFT_MIN_WHEN_SIDEWAYS  	20.0f
+#define ARM_LIFT_MAX_WHEN_SIDEWAYS		150.0f
+
+#define MIN_TURRET_CMD 0.1f
 
 #endif
+

@@ -12,7 +12,7 @@ IntakeClass::IntakeClass()
 {
 	Intake = new Talon(Tal_Intake_Roller);//Intake_PWM
 	IntakeLift = new Talon(Tal_Intake_Lift);//IntakeLift_PWM
-	LiftEncoder = new Encoder(Encoder_Intake_Lift_1, Encoder_Intake_Lift_2);
+	LiftEncoder = new ResettableEncoderClass(Encoder_Intake_Lift_1, Encoder_Intake_Lift_2);
 
 	LiftEncoder_Cur = 0;
 	LiftEncoder_Targ = 0;
@@ -20,7 +20,7 @@ IntakeClass::IntakeClass()
 	LifterCommand_Prev = 0.0f;
 	kpLifter = .003f;
 
-//	.00075f
+	//	.00075f
 	LiftEncoder->Reset();
 	LiftPIDController= new PIDController(.01f,.0005f,0,LiftEncoder,IntakeLift,.05f);
 	LiftPIDController->SetContinuous(false);
@@ -32,50 +32,36 @@ void IntakeClass::Update(float intake, float intakelift)
 {
 	LifterCommand_Prev = LifterCommand_Cur;
 	LifterCommand_Cur = intakelift;
-	float lifterOut = 0;
-	float I = intake;
-	Intake->Set(I);
+	Intake->Set(intake);
 
 	LiftEncoder_Cur = GetLiftEncoder();
 	if((fabs(LifterCommand_Prev) > .1f) && (fabs(LifterCommand_Cur) < .1f))
 	{
+		printf("Intake lift released, HOLD: %d\r\n",LiftEncoder_Cur);
 		SetLift(LiftEncoder_Cur);
+		LiftPIDController->Reset();
 		LiftPIDController->Enable();
 	}
 
-	if(fabs(LifterCommand_Cur) != 0)
+	if(fabs(LifterCommand_Cur) > 0.1f)
 	{
 		LiftEncoder_Targ = -1.0f;
-		lifterOut = LifterCommand_Cur;
 		SmartDashboard::PutNumber("STATEE2",1);
 		LiftPIDController->Disable();
-		IntakeLift->Set(-lifterOut);
+		IntakeLift->Set(-LifterCommand_Cur);
 	}
 	else
 	{
-		lifterOut = -(LiftEncoder_Targ - LiftEncoder_Cur) * kpLifter + .1f;
 		SmartDashboard::PutNumber("STATEE",0);
-
 	}
-	//IntakeLift->Set(-lifterOut);
+
 	SmartDashboard::PutData("IntakePID", LiftPIDController);
 }
 
 IntakeClass::~IntakeClass() {
 	// TODO Auto-generated destructor stub
 }
-/*void IntakeClass::Intake_In()
-{
-	Intake->Set(1.0);
-}
-void IntakeClass::Intake_Out()
-{
-	Intake->Set(-1.0);
-}
-void IntakeClass::Intake_Off()
-{
-	Intake->Set(0);
-}*/
+
 void IntakeClass::GotoFloor()
 {
 	SetLift(Preset_Intake_Floor);
@@ -114,10 +100,13 @@ void IntakeClass::ResetEncoderLift()
 	LiftEncoder->Reset();
 	SetLift(0);
 }
-//void IntakeClass::GoToInEndGame()
-//{
-	//SetLift()
-//}
+
+void IntakeClass::ResetEncoderLiftDown()
+{
+	LiftEncoder->Reset_To_Value(Preset_Intake_Down);
+	SetLift(Preset_Intake_Down);
+}
+
 void IntakeClass::SendData()
 {
 	SmartDashboard::PutNumber("BeaterBarEncoder",LiftEncoder->Get());

@@ -9,6 +9,8 @@
 #define SRC_INTAKE_H_
 
 #include "WPILib.h"
+#include "ResettableEncoder.h"
+
 
 class IntakeClass
 {
@@ -20,7 +22,7 @@ public:
 
 	Talon *Intake;
 	Talon *IntakeLift;
-	Encoder *LiftEncoder;
+	ResettableEncoderClass *LiftEncoder;
 
 	int LiftEncoder_Cur = 0;
 	int LiftEncoder_Targ = 0;
@@ -41,6 +43,8 @@ public:
 	void IntakeOut();
 	//void GoToInEndGame();
 	void ResetEncoderLift();
+	void ResetEncoderLiftDown();
+
 	int GetLiftEncoder();
 	void SetLift(int targ);
 	void SendData();

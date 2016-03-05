@@ -9,6 +9,9 @@
 #define SRC_ARM_H_
 
 #include "WPILib.h"
+class ResettableEncoderClass;
+
+
 
 class ArmClass {
 public:
@@ -17,7 +20,7 @@ public:
 	Victor *ArmLifter;
 	Victor *ArmTurret;
 	Encoder *TurretEncoder;
-	Encoder *LifterEncoder;
+	ResettableEncoderClass *LifterEncoder;
 
 	Solenoid *ShotRetract;
 	Solenoid *ShotExtend;
@@ -87,6 +90,7 @@ public:
 	//void GoToEndGame();
 	void SendData();
 	void ResetEncoderLifter();
+	void ResetEncoderLifterDown();
 	void ResetEncoderTurret();
 	float FSign(float a);
 	float Clamp_Target(float tar, float lowerlim, float upperlim);
@@ -94,6 +98,19 @@ public:
 	ArmClass();
 	~ArmClass();
 	bool isauto;
+
+	// These two functions will return a modified command if the given command would push the arm into
+	// an illegal configuration.  If the command would help move the arm out of the invalid
+	// configuration it should return it unmodified.  If the arm is already in an invalid configuration
+	// then these commands could return a command that moves it toward a valid configuration.
+	// The 'ArmTurretVictorClass' and 'ArmLiftVictorClass' call these functions.
+	float Turret_Encoder_To_Degrees(int enc);
+	float Validate_Turret_Command(float cmd, bool ispidcmd = false);
+
+	float Lift_Encoder_To_Degrees(int enc);
+	float Compute_Lift_Error_Correction_Command(float error);
+	float Validate_Lift_Command(float cmd, bool ispidcmd = false);
+
 };
 
 #endif /* SRC_ARM_H_ */

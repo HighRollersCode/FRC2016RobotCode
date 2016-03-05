@@ -6,16 +6,97 @@
  */
 
 #include "Arm.h"
-#include <Defines.h>
+#include "Defines.h"
+#include "ResettableEncoder.h"
 
-ArmClass::ArmClass() {
+
+//////////////////////////////////////////////////////////////////////////
+//
+//  Specialized 'Victor' Wrapper classes for the arm which validate
+//  any commands they recieve by calling the ArmClass::Validate_Cmd
+//  functions.
+//
+//////////////////////////////////////////////////////////////////////////
+
+// ArmLiftVictorClass ensures that the arm stays within the 15" envelope
+// arount the robot.
+class ArmLiftVictorClass : public Victor
+{
+public:
+	explicit ArmLiftVictorClass(uint32_t channel,ArmClass * arm);
+	virtual void Set(float value, uint8_t syncGroup = 0) override;
+	virtual void PIDWrite(float output) override;
+
+protected:
+	ArmClass * m_Arm;
+};
+
+
+ArmLiftVictorClass::ArmLiftVictorClass(uint32_t channel,ArmClass * arm) :
+			Victor(channel),
+			m_Arm(arm)
+
+{
+}
+void ArmLiftVictorClass::Set(float value, uint8_t syncGroup)
+{
+	value = m_Arm->Validate_Lift_Command(value);
+	Victor::Set(value,syncGroup);
+}
+void ArmLiftVictorClass::PIDWrite(float value)
+{
+	value = m_Arm->Validate_Lift_Command(value);
+	Victor::Set(value);
+}
+
+
+// ArmTurretVictorClass ensures that the turret does not move past
+// its mechanical limits.
+class ArmTurretVictorClass : public Victor
+{
+public:
+	explicit ArmTurretVictorClass(uint32_t channel,ArmClass * arm);
+	virtual void Set(float value, uint8_t syncGroup = 0) override;
+	virtual void PIDWrite(float output) override;
+
+protected:
+	ArmClass * m_Arm;
+};
+
+ArmTurretVictorClass::ArmTurretVictorClass(uint32_t channel,ArmClass * arm) :
+	Victor(channel),
+	m_Arm(arm)
+{
+}
+
+void ArmTurretVictorClass::Set(float value, uint8_t syncGroup)
+{
+	value = m_Arm->Validate_Turret_Command(value);
+	Victor::Set(value,syncGroup);
+}
+
+void ArmTurretVictorClass::PIDWrite(float value)
+{
+	value = m_Arm->Validate_Turret_Command(value, true);
+	Victor::Set(value);
+}
+
+
+
+
+
+
+
+
+ArmClass::ArmClass()
+{
 	ArmShooter = new Victor(Tal_ArmShooter_Left);
 	ArmShooter2 = new Victor(Tal_ArmShooter_Right);
-	ArmLifter = new Victor(Tal_ArmLifter);
-	ArmTurret = new Victor(Tal_ArmTurret);
+	ArmLifter = new ArmLiftVictorClass(Tal_ArmLifter, this);
+	ArmTurret = new ArmTurretVictorClass(Tal_ArmTurret, this);
 
 	TurretEncoder = new Encoder(Encoder_Arm_Turret_1, Encoder_Arm_Turret_2, false,Encoder::EncodingType::k4X);
-	LifterEncoder = new Encoder(Encoder_Arm_Lift_1, Encoder_Arm_Lift_2, false,Encoder::EncodingType::k4X);
+	LifterEncoder = new ResettableEncoderClass(Encoder_Arm_Lift_1, Encoder_Arm_Lift_2, false,Encoder::EncodingType::k4X);
 
 	ShotExtend = new Solenoid(Sol_Shot_Extend);
 	ShotRetract = new Solenoid(Sol_Shot_Retract);
@@ -111,8 +192,9 @@ void ArmClass::UpdateLift(float ArmLift)
 	else
 	{
 		ArmPIDController->SetPID(ArmPIDController->GetP(),0,ArmPIDController->GetD());
-
 	}
+
+
 	if(fabs(ArmLifterCommand_Cur) > .1f)
 	{
 		ArmPIDController->Disable();
@@ -204,7 +286,6 @@ void ArmClass::UpdateTurret(float Turret)
 	}
 	else
 	{
-
 		TurretPIDController->SetPID(TurretPIDController->GetP(),0,TurretPIDController->GetD());
 	}
 	if((fabs(TurretCommand_Prev) > .1f) && (fabs(TurretCommand_Cur) < .1f))
@@ -255,7 +336,6 @@ void ArmClass::UpdateTurret(float Turret)
 	}
 	else
 	{
-
 		if(!TurretPIDController-> IsEnabled())
 		{
 			ArmTurret->Set(0);
@@ -301,9 +381,9 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	UpdateLift(ArmLift);
 	UpdateTurret(Turret);
 	if(CurrentResetInput && !PrevResetInput)
-		{
-			ResetPostion();
-		}
+	{
+		ResetPostion();
+	}
 	if(!isauto )
 	{
 		float a = Shooter;
@@ -345,8 +425,8 @@ void ArmClass::AutonomousTrackingUpdate(float tx, float ty, float crossX, float 
 	else
 	{
 		ArmPIDController->SetPID(ArmPIDController->GetP(),0,ArmPIDController->GetD());
-
 	}
+
 	if(fabs(TurretPIDController->GetError()) < 200)
 	{
 		TurretPIDController->SetPID(TurretPIDController->GetP(),TunerPIDController->GetI(),TurretPIDController->GetD());
@@ -355,6 +435,7 @@ void ArmClass::AutonomousTrackingUpdate(float tx, float ty, float crossX, float 
 	{
 		TurretPIDController->SetPID(TurretPIDController->GetP(),0,TurretPIDController->GetD());
 	}
+
 	if(isTracking)
 	{
 		if(ArmTimer->Get() > .01f)
@@ -411,7 +492,6 @@ void ArmClass::FullShotUpdate()
 }
 void ArmClass::ShooterIntake()
 {
-
 	ArmShooter->Set(-.5f);
 	ArmShooter2->Set(.5f);
 }
@@ -577,7 +657,6 @@ void ArmClass::GoToArm()
 }
 void ArmClass::ResetEncoderLifter()
 {
-
 	LifterEncoder->Reset();
 	ArmPIDController->Reset();
 }
@@ -586,10 +665,18 @@ void ArmClass::ResetEncoderTurret()
 	TurretEncoder->Reset();
 	TurretPIDController->Reset();
 }
+
+void ArmClass::ResetEncoderLifterDown()
+{
+	LifterEncoder->Reset_To_Value(Preset_Arm_Down);
+	ArmPIDController->Reset();
+}
+
+
 void ArmClass::SendData()
 {
-	SmartDashboard::PutNumber("TurretEncoder",TurretEncoder->Get());
-	SmartDashboard::PutNumber("TurretLiftEncoder",LifterEncoder->Get());
+	SmartDashboard::PutNumber("ArmTurretEncoder",TurretEncoder->Get());
+	SmartDashboard::PutNumber("ArmLiftEncoder",LifterEncoder->Get());
 }
 float ArmClass::FSign(float a)
 {
@@ -604,7 +691,7 @@ float ArmClass::FSign(float a)
 }
 bool ArmClass::TurretRoughlyCentered()
 {
-	if(fabs (GetTurretEncoder() <= 100))
+	if(abs(GetTurretEncoder()) <= 100)
 	{
 		return true;
 	}
@@ -613,3 +700,142 @@ bool ArmClass::TurretRoughlyCentered()
 		return false;
 	}
 }
+
+float ArmClass::Turret_Encoder_To_Degrees(int enc)
+{
+	return enc * ARM_TURRET_DEGREES_PER_TICK;
+}
+
+float ArmClass::Validate_Turret_Command(float cmd, bool ispidcmd)
+{
+#if 01
+	int tur = GetTurretEncoder();
+	if (cmd >= 0.0f)   // if cmd is moving turret toward lower angle...
+	{
+		if (tur < ARM_TURRET_MIN_ENCODER)  // and it is past the lowest angle allowed
+		{
+			//float error = ARM_TURRET_MIN_ENCODER - tur;
+			// BAD!
+			return 0.0f;
+		}
+	}
+	else if (cmd <= 0.0f)  // if cmd is moving turret toward higher angles...
+	{
+		if (tur > ARM_TURRET_MAX_ENCODER)  // and it is past the highest angle allowed
+		{
+			// BAD!
+			return 0.0f;
+		}
+	}
+#endif
+
+	if(ispidcmd)
+	{
+		if(cmd > 0.0f)
+		{
+			cmd = fmaxf(cmd, MIN_TURRET_CMD);
+		}
+		else if (cmd < 0.0f)
+		{
+			cmd = fminf(cmd, -MIN_TURRET_CMD);
+		}
+	}
+	return cmd;
+}
+
+float ArmClass::Lift_Encoder_To_Degrees(int enc)
+{
+	return 90.0f + ARM_LIFT_DEGREES_PER_TICK * enc;
+}
+
+float ArmClass::Compute_Lift_Error_Correction_Command(float error)
+{
+	float cmd = -ARM_LIFT_CORRECTION_P * error;
+	if (cmd > 0.3f) return 0.3f;
+	if (cmd < -0.3f) return -0.3f;
+
+	return cmd;
+}
+
+float ArmClass::Validate_Lift_Command(float cmd, bool ispidcmd)
+{
+#if 01
+	// Validating the lift command.
+	// We broke the limits down into two cases.
+	// 1)  When the turret is facing forward (0deg) the arm can go down to 0deg or up to (180-39.2 = 140.8deg)
+	// 2)  When the turret is facing sideways (90deg or 270deg) the arm can go down to 14.6deg or up to (180-14.6 = 165.4deg)
+
+	int lift_enc = GetLifterEncoder();
+	float lift_angle = Lift_Encoder_To_Degrees(lift_enc);
+	int turret_enc = GetTurretEncoder();
+	float turret_angle = Turret_Encoder_To_Degrees(turret_enc);
+
+	// Special case: Turret is centered.
+	if (TurretRoughlyCentered())
+	{
+		if (cmd >= 0.0f)	// if we are pushing the arm down (might have to switch this to > 0.0
+		{
+			if (lift_angle < ARM_LIFT_MIN_WHEN_CENTERED)
+			{
+				// BAD!  pushing the arm into the frame of the robot
+				float error = ARM_LIFT_MIN_WHEN_CENTERED - lift_angle;
+				return Compute_Lift_Error_Correction_Command(error);
+			}
+		}
+		if (cmd <= 0.0f) // lifting, limit at 140 deg
+		{
+			if (lift_angle > ARM_LIFT_MAX_WHEN_CENTERED)
+			{
+				float error = ARM_LIFT_MAX_WHEN_CENTERED - lift_angle;
+				return Compute_Lift_Error_Correction_Command(error);
+			}
+		}
+	}
+	else if (fabs(turret_angle) < 45.0f)   // Mostly Forward case
+	{
+		if (cmd >= 0.0f)	// if we are pushing the arm down (might have to switch this to > 0.0
+		{
+			if (lift_angle < ARM_LIFT_MIN_WHEN_FWD)
+			{
+				// BAD!  pushing the arm into the frame of the robot
+				float error = ARM_LIFT_MIN_WHEN_FWD - lift_angle;
+				return Compute_Lift_Error_Correction_Command(error);
+			}
+		}
+		if (cmd <= 0.0f) // lifting, limit at 140 deg
+		{
+			if (lift_angle > ARM_LIFT_MAX_WHEN_FWD)
+			{
+				float error = ARM_LIFT_MAX_WHEN_FWD - lift_angle;
+				return Compute_Lift_Error_Correction_Command(error);
+			}
+		}
+	}
+	else  // Sideways case
+	{
+		if (cmd >= 0.0f)	// if we are pushing the arm down (might have to switch this to > 0.0
+		{
+			if (lift_angle < ARM_LIFT_MIN_WHEN_SIDEWAYS)
+			{
+				// BAD!  violating the envelop to one side of the robot
+				float error = ARM_LIFT_MIN_WHEN_SIDEWAYS - lift_angle;
+				return Compute_Lift_Error_Correction_Command(error);
+			}
+		}
+		if (cmd <= 0.0f) // lifting, limit at 140 deg
+		{
+			if (lift_angle > ARM_LIFT_MAX_WHEN_SIDEWAYS)
+			{
+				// BAD! violating the envelope to the other side of the robot
+				float error = ARM_LIFT_MAX_WHEN_SIDEWAYS - lift_angle;
+				return Compute_Lift_Error_Correction_Command(error);
+			}
+		}
+	}
+#endif
+
+	return cmd;
+}
+
+
+
