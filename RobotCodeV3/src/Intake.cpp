@@ -85,17 +85,9 @@ void IntakeClass::Update(float intake, float intakelift)
 	if(fabs(LifterCommand_Cur) > 0.1f)
 	{
 		LiftEncoder_Targ = -1.0f;
-		SmartDashboard::PutNumber("STATEE2",1);
 		LiftPIDController->Disable();
 		IntakeLift->Set(-LifterCommand_Cur);
 	}
-	else
-	{
-		SmartDashboard::PutNumber("STATEE",0);
-	}
-
-	SmartDashboard::PutData("IntakePID", LiftPIDController);
-	SmartDashboard::PutBoolean("IntakeLimit", LimitSwitch->Get());
 }
 
 IntakeClass::~IntakeClass() {
@@ -150,6 +142,8 @@ void IntakeClass::ResetEncoderLiftDown()
 void IntakeClass::SendData()
 {
 	SmartDashboard::PutNumber("BeaterBarEncoder",LiftEncoder->Get());
+	SmartDashboard::PutData("IntakePID", LiftPIDController);
+	SmartDashboard::PutBoolean("IntakeLimit", LimitSwitch->Get());
 }
 float IntakeClass::Validate_Lift_Command(float cmd)
 {

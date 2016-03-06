@@ -90,7 +90,6 @@
 
 #define INTAKE_LIFT_MIN 10.0f
 
-#define MIN_TURRET_CMD 0.19f
 
 #endif
 

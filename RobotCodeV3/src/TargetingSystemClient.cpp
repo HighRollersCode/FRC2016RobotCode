@@ -164,25 +164,33 @@ bool TargetingSystemClient::Update()
 void TargetingSystemClient::Handle_Incoming_Data(char * data,int size)
 {
 	//printf("Handle_Incoming_Data: %s \n",data);
+
 	// check if we ever get a command which is incomplete, i.e. doesn't have a /n
 	char * endln = strchr(data,'\n');
 	if (endln == NULL)
 	{
 		printf("ERROR: Targetting system got partial command!  %s\r\n",data);
+		return;
 	}
 
-	char *cmd = strtok(data,"\n");
+	char *strtok_tmp;
+	char *cmd = strtok_r(data,"\r",&strtok_tmp);
 	while(cmd !=NULL)
 	{
 		Handle_Command(cmd);
-		cmd = strtok(NULL,"\n");
+		cmd = strtok_r(NULL,"\r",&strtok_tmp);
 	}
 
 	//printf("done.\n");
 }
 void TargetingSystemClient::Handle_Command(char*data)
 {
-//	printf("Handle_Command: %s\n",data);
+	//printf("Handle_Command: %s\n",data);
+
+	if (data[1] != ' ')
+	{
+		return;  // garbage command!? ignore it
+	}
 
 	switch(data[0])
 	{
@@ -215,9 +223,23 @@ void TargetingSystemClient::EqualizeDisable()
 }
 void TargetingSystemClient::Handle_Target(char *data)
 {
-	sscanf(data,"0 %f %f %f",&m_TargetDistance,&m_TargetAngle,&m_TargetArea);
-	gotdata = true;
+	float tmpx,tmpy,tmparea;
+	sscanf(data,"0 %f %f %f",&tmpx,&tmpy,&tmparea);
+
+	if ((fabs(tmpx) <= 1.0f) && (fabs(tmpy <= 1.0f)))
+	{
+		m_TargetDistance = tmpx;
+		m_TargetAngle = tmpy;
+		m_TargetArea = tmparea;
+		gotdata = true;
+	}
+
 	SmartDashboard::PutString("Track Data", data);
+
+	if ((fabs(m_TargetDistance) > 2.0f) || (fabs(m_TargetAngle) > 2.0f))
+	{
+		printf("bad target.");
+	}
 //	printf("Handle_Target: %f\n",m_TargetDistance);
 }
 void TargetingSystemClient::Handle_Calibration(char *data)
@@ -231,6 +253,12 @@ void TargetingSystemClient::Handle_CalibrationRefresh(char *data)
 	sscanf(data,"5 %f %f",&xCal,&yCal);
 	gotdata = true;
 	SmartDashboard::PutString("Calibration", data);
+
+	if ((fabs(xCal) > 1.0f) || (fabs(yCal) > 1.0f))
+	{
+		printf("bad target.");
+	}
+
 }
 void TargetingSystemClient::SmartDashboardUpdate()
 {

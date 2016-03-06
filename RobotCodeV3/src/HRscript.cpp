@@ -9,10 +9,6 @@
 #include <istream>
 #include "unistd.h"
 
-//#include "FakeRobot.h"
-
-
-///////////////////////////////////////////////////////////////////////////////
 
 
 HrScriptCommandClass::HrScriptCommandClass()

@@ -59,6 +59,8 @@ public:
 
 	Timer *ArmTimer;
 
+	Timer *ArmLockonTimer;
+	Timer *LastShotTimer;
 	PIDController *ArmPIDController;
 	PIDController *TurretPIDController;
 	PIDController *TunerPIDController;
@@ -76,6 +78,7 @@ public:
 	void ResetTurret();
 	void ResetPostion();
 	void FullShot();
+	void FullShotQuick();
 	void FullShotUpdate();
 	void ShooterIntake();
 	void ShooterOutake();

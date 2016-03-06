@@ -10,16 +10,35 @@
 #include "ResettableEncoder.h"
 
 
+const float MIN_ARM_LIFT_CMD = 0.1f;
+
+const float ARM_LIFT_P = -.0005f;
+const float ARM_LIFT_I = -0.00001f;
+const float ARM_LIFT_D = .0001f;
+
+
+const float MIN_TURRET_CMD = 0.12f;
+
+const float ARM_TURRET_P = -.001125f;
+const float ARM_TURRET_I = -.000025f;
+const float ARM_TURRET_D = 0.0f;
+
+const float ARM_TURRET_TOLERANCE = 3;
+
+const float LOCKON_DEGREES_X = 1.75f;
+const float LOCKON_DEGREES_Y = 2.0f;
+const float LOCKON_SECONDS = 0.35f;
+
 //////////////////////////////////////////////////////////////////////////
 //
 //  Specialized 'Victor' Wrapper classes for the arm which validate
-//  any commands they recieve by calling the ArmClass::Validate_Cmd
+//  any commands they receive by calling the ArmClass::Validate_Cmd
 //  functions.
 //
 //////////////////////////////////////////////////////////////////////////
 
 // ArmLiftVictorClass ensures that the arm stays within the 15" envelope
-// arount the robot.
+// around the robot.
 class ArmLiftVictorClass : public Victor
 {
 public:
@@ -85,9 +104,6 @@ void ArmTurretVictorClass::PIDWrite(float value)
 
 
 
-
-
-
 ArmClass::ArmClass()
 {
 	ArmShooter = new Victor(Tal_ArmShooter_Left);
@@ -121,7 +137,6 @@ ArmClass::ArmClass()
 	ArmLifterCommand_Prev = 0.0f;
 	kpArmLifter = .001f;
 
-	isTracking = false;
 	CurrentEnableTracking = false;
 	PreviousEnableTracking = false;
 
@@ -138,17 +153,27 @@ ArmClass::ArmClass()
 	ArmTimer = new Timer();
 	ArmTimer->Reset();
 	ArmTimer->Start();
-isauto = false;
+
+	ArmLockonTimer = new Timer();
+	ArmLockonTimer->Reset();
+	ArmLockonTimer->Start();
+	LastShotTimer = new Timer();
+	LastShotTimer->Reset();
+	LastShotTimer->Start();
+
+	isauto = false;
 	TurretEncoder->Reset();
 	LifterEncoder->Reset();
 	TargetingLights= new Relay(0,Relay::kBothDirections);
 	//ArmPIDController= new PIDController(.00085f,.00000945f,0.00000945f,LifterEncoder,ArmLifter,.01f);
 //	ArmPIDController= new PIDController(.0013f,.00001f,0,LifterEncoder,ArmLifter,.01f);
-	ArmPIDController= new PIDController(-.0013f,-.00001f,.0002,LifterEncoder,ArmLifter,.01f);
+	// Last used:ArmPIDController= new PIDController(-.0013f,-.00001f,.0002f,LifterEncoder,ArmLifter,.01f);
+	ArmPIDController= new PIDController(ARM_LIFT_P,ARM_LIFT_I,ARM_LIFT_D,LifterEncoder,ArmLifter,.01f);
+
 	ArmPIDController->SetContinuous(false);
 	ArmPIDController->Enable();
-	ArmPIDController->SetAbsoluteTolerance(10);
-	ArmPIDController->SetOutputRange(-.5f,.5f);
+	ArmPIDController->SetAbsoluteTolerance(20);
+	ArmPIDController->SetOutputRange(-1.0f,1.0f);
 	//ArmPIDController = Clamp_Target(0.5, 0.5, 0.5);
 	ArmPIDController->SetInputRange(Preset_Arm_Floor ,Preset_Arm_Floor + 10000);
 
@@ -156,18 +181,19 @@ isauto = false;
 
 	//TurretPIDController = new PIDController(-.000459f, -.000035f ,.00000f,TurretEncoder,ArmTurret,.01f);
 //	TurretPIDController = new PIDController(-.00085f, -.000015f ,0,TurretEncoder,ArmTurret,.01f);
-	TurretPIDController = new PIDController(-.0025f, -.0000065f ,0,TurretEncoder,ArmTurret,.01f);
+//	TurretPIDController = new PIDController(-.0025f, -.0000065f ,0,TurretEncoder,ArmTurret,.01f);
+	TurretPIDController = new PIDController(ARM_TURRET_P, ARM_TURRET_I ,ARM_TURRET_D,TurretEncoder,ArmTurret,.01f);
 	//135
 	//245
 	TurretPIDController->SetContinuous(false);
 	TurretPIDController->Disable();
 	//TurretPIDController->SetAbsoluteTolerance(1);
 	TurretPIDController->SetInputRange(-1350,1350);
-	TurretPIDController->SetOutputRange(-.75f,.75f);
+	TurretPIDController->SetOutputRange(-1.0f,1.0f);
 	TunerPIDController = new PIDController(0,0,0,TurretEncoder,ArmTurret,.01f);
 	TunerPIDController->SetContinuous(false);
 	TunerPIDController->Disable();
-	TunerPIDController->SetAbsoluteTolerance(1);
+	TunerPIDController->SetAbsoluteTolerance(ARM_TURRET_TOLERANCE);
 	TunerPIDController->SetInputRange(-1221,1221);
 
 }
@@ -187,13 +213,12 @@ void ArmClass::UpdateLift(float ArmLift)
 
 	if(fabs(ArmPIDController->GetError()) < 1000)
 	{
-		ArmPIDController->SetPID(ArmPIDController->GetP(),-.00001f,ArmPIDController->GetD());
+		ArmPIDController->SetPID(ARM_LIFT_P,ARM_LIFT_I,ARM_LIFT_D);
 	}
 	else
 	{
-		ArmPIDController->SetPID(ArmPIDController->GetP(),0,ArmPIDController->GetD());
+		ArmPIDController->SetPID(ARM_LIFT_P,0,ARM_LIFT_D);
 	}
-
 
 	if(fabs(ArmLifterCommand_Cur) > .1f)
 	{
@@ -205,47 +230,7 @@ void ArmClass::UpdateLift(float ArmLift)
 				ArmLifterCommand_Cur *= .5f;
 			}
 		}
-		/*
-		if (TurretRoughlyCentered())
-		{
-			if(GetLifterEncoder() >= 8750)
-			{
-				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, 0, 1);
-				SetArm(8751);
-			}
-			else if(GetLifterEncoder() <= 0)
-			{
-				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, -1, 0);
-				SetArm(0);
-			}
-			else
-			{
-				ArmLifterOut = ArmLifterCommand_Cur;
-				ArmLifterEncoder_Trag = -1.0f;
-			}
-
-		}
-		else
-		{
-			if(GetLifterEncoder() >= 8750)
-			{
-				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, 0, 1);
-				SetArm(8751);
-			}
-			else if(GetLifterEncoder() <= 2000)
-			{
-				ArmLifterOut = Clamp_Target(ArmLifterCommand_Cur, -1, 0);
-				SetArm(-1990);
-			}
-			else
-			{
-				ArmLifterOut = ArmLifterCommand_Cur;
-				ArmLifterEncoder_Trag = -1.0f;
-			}
-		}
-		*/
 		ArmLifterOut = ArmLifterCommand_Cur;
-		//ArmLifterEncoder_Trag = -1.0f;
 		ArmLifter->Set(-ArmLifterOut);
 	}
 	else
@@ -255,22 +240,7 @@ void ArmClass::UpdateLift(float ArmLift)
 			ArmLifterOut = 0;
 			ArmLifter->Set(ArmLifterOut);
 		}
-		//if (TurretRoughlyCentered())
-		//{
-		//	ArmLifterEncoder_Trag = Clamp_Target(ArmLifterEncoder_Trag, 0, 8750);
-
-		//}
-		//else
-		//{
-		//	ArmLifterEncoder_Trag = Clamp_Target(ArmLifterEncoder_Trag, 2000, 8750);
-		//}
-	//	ArmLifterOut =- ((ArmLifterEncoder_Trag - ArmLifterEncoder_Cur) * kpArmLifter+(FSign(ArmLifterEncoder_Trag-ArmLifterEncoder_Cur)*.10f));
 	}
-		//ArmLifter->Set(-ArmLifterOut);
-	//SmartDashboard::PutBoolean("ArmPIDController", ArmPIDController->IsEnabled());
-		SmartDashboard::PutData("PID", ArmPIDController);
-		SmartDashboard::PutData("TUNERYaAXIS", TunerPIDController);
-
 }
 void ArmClass::UpdateTurret(float Turret)
 {
@@ -282,11 +252,11 @@ void ArmClass::UpdateTurret(float Turret)
 
 	if(fabs(TurretPIDController->GetError()) < 200)
 	{
-		TurretPIDController->SetPID(TurretPIDController->GetP(),0,0);//TurretPIDController->GetD());
+		TurretPIDController->SetPID(ARM_TURRET_P,ARM_TURRET_I,ARM_TURRET_D);//TurretPIDController->GetD());
 	}
 	else
 	{
-		TurretPIDController->SetPID(TurretPIDController->GetP(),0,0);//TurretPIDController->GetD());
+		TurretPIDController->SetPID(ARM_TURRET_P,0.0f,ARM_TURRET_D);//TurretPIDController->GetD());
 	}
 	if((fabs(TurretCommand_Prev) > .1f) && (fabs(TurretCommand_Cur) < .1f))
 	{
@@ -296,42 +266,7 @@ void ArmClass::UpdateTurret(float Turret)
 	if(fabs(TurretCommand_Cur) > .2f)
 	{
 		TurretPIDController->Disable();
-		/*if(fabs(TurretEncoder_Cur) >= 800)
-		{
-			if(TurretEncoder_Cur >= 800)
-			{
-				if((TurretCommand_Cur) < -.2f)
-				{
-					TurretCommand_Cur *= .5f;
-				}
-			}
-			else if(TurretEncoder_Cur <= 800)
-			{
-				if((TurretCommand_Cur) > .2f)
-				{
-					TurretCommand_Cur *= .5f;
-				}
-			}
-		}*/
-		/*
-		if(TurretEncoder_Cur >= 1221)
-		{
-			//turretOut = Clamp_Target(TurretCommand_Cur, 0, 1);
-			SetTurret(1230);
-		}
-		else if(TurretEncoder_Cur <= -1221)
-		{
-		//	turretOut = Clamp_Target(TurretCommand_Cur, -1, 0);
-			SetTurret(-1230);
-		}
-		else
-		*/
-		{
-			turretOut = TurretCommand_Cur;
-
-		}
-		//turretOut = TurretCommand_Cur;
-		//TurretEncoder_Targ = -1.0f;
+		turretOut = TurretCommand_Cur;
 		ArmTurret->Set(turretOut);
 	}
 	else
@@ -340,13 +275,10 @@ void ArmClass::UpdateTurret(float Turret)
 		{
 			ArmTurret->Set(0);
 		}
-		//turretOut = -(((TurretEncoder_Targ - TurretEncoder_Cur) * kpTurret )+(FSign(TurretEncoder_Targ-TurretEncoder_Cur)*.15f));
 	}
 
-	//ArmTurret->Set(turretOut);
-	//SmartDashboard::PutBoolean("TurretPIDController", TurretPIDController->IsEnabled());
-	SmartDashboard::PutData("TurretPID", TurretPIDController);
 }
+
 void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset, bool EnableTracking,float cX,float cY,float calX,float calY)
 {
 	PreviousEnableTracking = CurrentEnableTracking;
@@ -355,23 +287,58 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	{
 		ArmPIDController->Reset();
 		TurretPIDController->Reset();
-	}
-	if(CurrentEnableTracking)
-	{
-		ArmPIDController->Enable();
-		TurretPIDController->Enable();
-		SetArm(GetLifterEncoder());
-		SetTurret(GetTurretEncoder());
+		ArmLockonTimer->Start();
 	}
 	if(!CurrentEnableTracking && PreviousEnableTracking)
 	{
 		ArmPIDController->Disable();
 		TurretPIDController->Disable();
+		ArmLockonTimer->Stop();
+		ArmLockonTimer->Reset();
+	}
+	if(isShooting)
+	{
+		ArmPIDController->Disable();
+		TurretPIDController->Disable();
+		ArmPIDController->Reset();
+		TurretPIDController->Reset();
+	}
+	if(CurrentEnableTracking)
+	{
+		ArmPIDController->Enable();
+		TurretPIDController->Enable();
+		if((fabs(LastMoveByDegreesX) > LOCKON_DEGREES_X) || (fabs(LastMoveByDegreesY) > LOCKON_DEGREES_Y))
+		{
+			ArmLockonTimer->Reset();
+		}
+		else if((ArmLockonTimer->Get() > LOCKON_SECONDS) && (!isShooting))
+		{
+			// if the user was holding the shooter wheels on AND we have been locked on,
+			// then do a quick auto shot.
+			if(Shooter == 1.0f)
+			{
+				if(LastShotTimer->Get() > 1.5f)
+				{
+					FullShotQuick();
+					printf("SHOT!\r\n");
+					ArmLockonTimer->Reset();
+					LastShotTimer->Reset();
+					LastShotTimer->Start();
+				}
+			}
+		}
+		else if (Ball)
+		{
+			FullShotQuick();
+			printf("Manual shot during tracking!\r\n");
+			ArmLockonTimer->Reset();
+		}
+		FullShotUpdate();
 	}
 
 	//TurretPIDController->SetPID(P*.001f, I*.00001f, 0.0f);
 
-	if(EnableTracking && ArmTimer->Get() > .01f)
+	if(ArmTimer->Get() > .01f)
 	{
 		HandleTarget(cX,cY,calX,calY);
 		ArmTimer->Reset();
@@ -384,7 +351,8 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	{
 		ResetPostion();
 	}
-	if(!isauto )
+
+	if(!isauto && !CurrentEnableTracking)
 	{
 		float a = Shooter;
 		PrevBallTog = CurrentBallTog;
@@ -413,37 +381,34 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 }
 void ArmClass::StartTracking(int enable)
 {
-	isTracking = (enable != 0);
+	CurrentEnableTracking = (enable != 0);
 }
 
 void ArmClass::AutonomousTrackingUpdate(float tx, float ty, float crossX, float crossY)
 {
 	if(fabs(ArmPIDController->GetError()) < 1000)
 	{
-		ArmPIDController->SetPID(ArmPIDController->GetP(),-.00001f,ArmPIDController->GetD());
+		ArmPIDController->SetPID(ARM_LIFT_P,ARM_LIFT_I,ARM_LIFT_D);
 	}
 	else
 	{
-		ArmPIDController->SetPID(ArmPIDController->GetP(),0,ArmPIDController->GetD());
+		ArmPIDController->SetPID(ARM_LIFT_P,0,ARM_LIFT_D);
 	}
 
 	if(fabs(TurretPIDController->GetError()) < 200)
 	{
-		TurretPIDController->SetPID(TurretPIDController->GetP(),TunerPIDController->GetI(),TurretPIDController->GetD());
+		TurretPIDController->SetPID(ARM_TURRET_P,ARM_TURRET_I,ARM_TURRET_D);
 	}
 	else
 	{
-		TurretPIDController->SetPID(TurretPIDController->GetP(),0,TurretPIDController->GetD());
+		TurretPIDController->SetPID(ARM_TURRET_P,0,ARM_TURRET_D);
 	}
 
-	if(isTracking)
+	if(ArmTimer->Get() > .01f)
 	{
-		if(ArmTimer->Get() > .01f)
-		{
-			HandleTarget(tx,ty,crossX,crossY);
-			ArmTimer->Reset();
-			ArmTimer->Start();
-		}
+		HandleTarget(tx,ty,crossX,crossY);
+		ArmTimer->Reset();
+		ArmTimer->Start();
 	}
 }
 
@@ -451,6 +416,13 @@ void ArmClass::FullShot()
 {
 	isShooting = true;
 	ShotStage = 0;
+	ShotTimer->Reset();
+	ShotTimer->Start();
+}
+void ArmClass::FullShotQuick()
+{
+	isShooting = true;
+	ShotStage = 2;
 	ShotTimer->Reset();
 	ShotTimer->Start();
 }
@@ -470,14 +442,17 @@ void ArmClass::FullShotUpdate()
 		case 1:
 			if(ShotTimer->Get() > 1)
 			{
-				ShotExtend->Set(true);
-				ShotRetract->Set(false);
-				ShotTimer->Reset();
-				ShotTimer->Start();
 				ShotStage = 2;
 			}
 			break;
 		case 2:
+			ShotExtend->Set(true);
+			ShotRetract->Set(false);
+			ShotTimer->Reset();
+			ShotTimer->Start();
+			ShotStage = 3;
+			break;
+		case 3:
 			if(ShotTimer->Get() > .25f)
 			{
 				ShotExtend->Set(false);
@@ -520,14 +495,10 @@ float ArmClass::Clamp_Target(float tar, float lowerlim, float upperlim)
 		return tar;
 	}
 }
-void ArmClass::SetTurret(int targ)//,bool relative = false)
+void ArmClass::SetTurret(int targ)
 {
 	TurretEncoder_Targ = targ;
-//	TurretEncoder_Targ = Clamp_Target(TurretEncoder_Targ, -1221, 1221);
-	//if(!relative)
-	//{
 	TurretPIDController->SetSetpoint(TurretEncoder_Targ);
-	//}
 }
 int ArmClass::GetTurretEncoder()
 {
@@ -546,9 +517,7 @@ void ArmClass::ResetPostion()
 
 void ArmClass::SetArm(int targ)
 {
-	//ArmLifterEncoder_Trag = targ;
 	ArmPIDController->SetSetpoint(targ);
-
 }
 
 void ArmClass::ResetArm()
@@ -558,10 +527,9 @@ void ArmClass::ResetArm()
 
 void ArmClass::ResetTurret()
 {
-//	TurretPIDController->SetPID(-.000955f,TurretPIDController->GetI(),TurretPIDController->GetD());
 	SetTurret(0);
-
 }
+
 void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 {
 	if(fabs (centerX) >= 1 || fabs(centerY) >= 1)
@@ -582,10 +550,9 @@ void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 
 		float ticksPerDegreeX = 1280/90.0f;
 		float ticksPerDegreeY = 5000/90.0f;
-		//centerX = Clamp_Target(centerX,-.8f,.8f);
 
 		moveByX_Degrees = (calX - centerX) * (xFOV*.5f);
-		moveByY_Degrees = (centerY - calY) * (yFOV*.5f);
+		moveByY_Degrees = (calY - centerY) * (yFOV*.5f);
 
 		LastMoveByDegreesX = moveByX_Degrees;
 		LastMoveByDegreesY = moveByY_Degrees;
@@ -599,55 +566,12 @@ void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 			moveByY_Ticks *=-1.0f;
 		}
 
-		SetTurret(GetTurretEncoder()-(moveByX_Ticks* 1.0f)); //.85
-		SetArm(GetLifterEncoder()+(moveByY_Ticks* 1.0f));
-		SmartDashboard::PutNumber("MoveByTicks",moveByX_Ticks);
-		SmartDashboard::PutNumber("TurretError",TurretPIDController->GetError());
+		if (CurrentEnableTracking)
+		{
+			SetTurret(GetTurretEncoder()-(moveByX_Ticks* 1.0f)); //.85
+			SetArm(GetLifterEncoder()-(moveByY_Ticks* 1.0f));
+		}
 	}
-	/*
-	if(fabs (centerX) >= 640 || fabs(centerY) >= 480)
-	{
-		return;
-	}
-	else
-	{
-		float moveByX_Pixels = 0;
-		float moveByY_Pixels = 0;
-
-		float moveByX_Degrees = 0;
-		float moveByY_Degrees = 0;
-
-		float moveByX_Ticks = 0;
-		float moveByY_Ticks = 0;
-
-		//float xFOV = 57.12f;
-		//float yFOV = 44.42f;
-		float xFOV = 76.00f;
-		float yFOV = 61.2f;
-
-		float xPixels = 320;
-		float yPixels = 240;
-
-		float degreesPerPixelX = xFOV / xPixels;
-		float degreesPerPixelY = yFOV / yPixels;
-
-		float ticksPerDegreeX = 1280/90.0f;
-		float ticksPerDegreeY = 5000/90.0f;
-
-		moveByX_Pixels = centerX - (xPixels/2);
-		moveByY_Pixels = centerY - (yPixels/2);
-
-		moveByX_Degrees = moveByX_Pixels * degreesPerPixelX;
-		moveByY_Degrees = moveByY_Pixels * degreesPerPixelY;
-
-		moveByX_Ticks = moveByX_Degrees * ticksPerDegreeX;
-		moveByY_Ticks = moveByY_Degrees * ticksPerDegreeY;
-
-		SetTurret(GetTurretEncoder()+(moveByX_Ticks* .50f));
-		SetArm(GetLifterEncoder()-(moveByY_Ticks* .25f));
-
-	}
-	*/
 }
 void ArmClass::GotoTowerShot()
 {
@@ -678,12 +602,18 @@ void ArmClass::ResetEncoderLifterDown()
 	ArmPIDController->Reset();
 }
 
-
 void ArmClass::SendData()
 {
 	SmartDashboard::PutNumber("ArmTurretEncoder",TurretEncoder->Get());
 	SmartDashboard::PutNumber("ArmLiftEncoder",LifterEncoder->Get());
 	SmartDashboard::PutNumber("TURRCOM",ArmTurret->Get());
+	SmartDashboard::PutData("PID", ArmPIDController);
+	SmartDashboard::PutData("TUNERYaAXIS", TunerPIDController);
+	SmartDashboard::PutData("TurretPID", TurretPIDController);
+	SmartDashboard::PutNumber("TurretError",TurretPIDController->GetError());
+	SmartDashboard::PutNumber("LastMoveByDegreesX", LastMoveByDegreesX);
+	SmartDashboard::PutNumber("LastMoveByDegreesY", LastMoveByDegreesY);
+	SmartDashboard::PutNumber("ArmLockonTimer", ArmLockonTimer->Get());
 }
 float ArmClass::FSign(float a)
 {
@@ -747,9 +677,9 @@ float ArmClass::Validate_Turret_Command(float cmd, bool ispidcmd)
 		{
 			cmd = fminf(cmd, -MIN_TURRET_CMD);
 		}
-		else if (cmd < .003f && cmd > -.003)
+		else if (cmd < .003f && cmd > -.003f)
 		{
-			cmd = 0;
+			cmd = 0.0f;
 		}
 
 	}
@@ -847,8 +777,22 @@ float ArmClass::Validate_Lift_Command(float cmd, bool ispidcmd)
 	}
 #endif
 
+	if(ispidcmd)
+	{
+		//randon .002 commands...
+		if(cmd > 0.003f)
+		{
+			cmd = fmaxf(cmd, MIN_ARM_LIFT_CMD);
+		}
+		else if (cmd < -.003f)
+		{
+			cmd = fminf(cmd, -MIN_ARM_LIFT_CMD);
+		}
+		else if (cmd < .003f && cmd > -.003f)
+		{
+			cmd = 0.0f;
+		}
+	}
+
 	return cmd;
 }
-
-
-

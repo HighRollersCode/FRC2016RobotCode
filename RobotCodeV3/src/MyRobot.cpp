@@ -25,8 +25,6 @@ RobotDemo * RobotDemo::TheRobot = NULL;
 RobotDemo::RobotDemo(void)
 {
 	printf("Make Smartdash\r\n");
-	SmartDashboard::init();
-	SmartDashboard::PutData("Shutdown Jetson",new ShutdownJetsonCommand());
 
 	TheRobot = this;
 	commandLeft = 0;
@@ -270,6 +268,11 @@ void RobotDemo::Send_Smartdashboard_Data(void)
 		Arm->SendData();
 		SmartDashboard::PutBoolean("Jetson Connection", TargClient->Get_Connected());
 		SmartDashTimer->Reset();
+		SmartDashboard::init();
+		SmartDashboard::PutData("Shutdown Jetson",new ShutdownJetsonCommand());
+		SmartDashboard::PutNumber("INTAKELIFT",commandintakelift);
+		SmartDashboard::PutNumber("x",TargClient->Get_Target_Distance());
+		SmartDashboard::PutNumber("y",TargClient->Get_Target_Angle());
 
 	}
 }
@@ -298,9 +301,6 @@ void RobotDemo::OperatorControl(void)
 		Send_Smartdashboard_Data();
 		UpdateInputs();
 		TargClient->Update();
-		SmartDashboard::PutNumber("INTAKELIFT",commandintakelift);
-		SmartDashboard::PutNumber("x",TargClient->Get_Target_Distance());
-		SmartDashboard::PutNumber("y",TargClient->Get_Target_Angle());
 		DriveTrain->StandardTank(-commandLeft, -commandRight);
 		Arm->Update(commandLift, -commandArmShooter, -commandTurret, turretStick->GetTrigger(), turretStick->GetRawButton(11),
 				turretStick->GetRawButton(2),TargClient->Get_Target_Distance(),TargClient->Get_Target_Angle(),
