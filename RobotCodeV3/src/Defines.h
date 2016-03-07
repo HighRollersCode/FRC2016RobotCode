@@ -8,7 +8,8 @@
 //run as
 //wpilib c++ deploy
 #define USING_GAMEPAD 0
-#define USING_MXP 1
+#define USING_MXP 0
+#define USING_GYRO 1
 
 #define Tal_Drive_Left_1 0
 #define Tal_Drive_Left_2 1
@@ -55,6 +56,8 @@
 #define Preset_Intake_Defense -10
 #define Preset_Intake_Intake -450
 #define Preset_Intake_Down -500     // value to use when reseting the intake encoder in-match
+#define INTAKE_LIFT_MIN -500
+#define INTAKE_LIFT_MAX 0
 
 #define Preset_Arm_Floor -5850
 #define Preset_Arm_Defense -795
@@ -88,7 +91,6 @@
 #define ARM_LIFT_MIN_WHEN_SIDEWAYS  	20.0f
 #define ARM_LIFT_MAX_WHEN_SIDEWAYS		150.0f
 
-#define INTAKE_LIFT_MIN 10.0f
 
 
 #endif

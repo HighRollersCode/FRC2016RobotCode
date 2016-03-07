@@ -58,8 +58,14 @@ bool Auton::Running()
 	{
 		return false;
 	}
-	//else if (ds->IsOperatorControl() == true){return false;}
-//	else if (ds->IsEnabled() == false){return false;}
+	else if (ds->IsOperatorControl() == true)
+	{
+		return false;
+	}
+	else if (ds->IsEnabled() == false)
+	{
+		return false;
+	}
 	return true;
 }
 void Auton::AutonWait(float Seconds)
@@ -109,8 +115,6 @@ void Auton::AutonWaitForTarget(float Seconds)
 			lock_time = 0.0f;
 		}
 		keep_waiting = (AutonTimer->Get() < targ) && (lock_time < MIN_LOCK_TIME);
-
-
 	}
 }
 void Auton::Auto_DriveTimer(float Fwd, float Turn, float seconds)
@@ -159,7 +163,7 @@ void Auton::Auto_GYROSTRAIGHT(float forward, float ticks, float desheading)
 	float MAINTAIN = desheading;
 	float GYRO_P = DriveTrain->mult;
 
-	float angle_error = MAINTAIN - DriveTrain->currentGyro;
+	float angle_error = MAINTAIN - DriveTrain->GetHeading();
 	float turn = GYRO_P * angle_error;
 	if(ticks > 0)
 	{
@@ -199,15 +203,6 @@ bool Auton::Auto_System_Update()
 {
 	if(Running())
 	{
-#if !USING_MXP
-	//	DriveTrain-currentGyro = DriveTrain->gyro->GetAngle();
-#else
-		if (DriveTrain->imu != NULL)
-		{
-			DriveTrain->currentGyro = DriveTrain->imu->GetYaw();
-			SmartDashboard::PutNumber("GYROAUTO",DriveTrain->currentGyro);
-		}
-#endif
 		Targeting->Update();
 //		Arm->AutonomousTrackingUpdate(Targeting->Get_Target_Distance(),Targeting->Get_Target_Angle(),Targeting->Get_Cal_X(),Targeting->Get_Cal_Y());
 		Arm->Update(0,0,0,false,false,Arm->isTracking,
@@ -220,7 +215,6 @@ bool Auton::Auto_System_Update()
 
 		if(AutonTimer->Get() > 14.95)
 		{
-
 		}
 		Wait(.001f);
 	}

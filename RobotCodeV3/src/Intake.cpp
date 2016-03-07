@@ -47,8 +47,8 @@ void IntakeLiftVictorClass::PIDWrite(float value)
 
 IntakeClass::IntakeClass()
 {
-	Intake = new Talon(Tal_Intake_Roller);//Intake_PWM
-	IntakeLift = new Talon(Tal_Intake_Lift);//IntakeLift_PWM
+	Intake = new Victor(Tal_Intake_Roller);//Intake_PWM
+	IntakeLift = new IntakeLiftVictorClass(Tal_Intake_Lift,this);
 	LiftEncoder = new ResettableEncoderClass(Encoder_Intake_Lift_1, Encoder_Intake_Lift_2);
 
 	LimitSwitch = new DigitalInput(Intake_Lift_Limit_Switch);
@@ -72,14 +72,16 @@ void IntakeClass::Update(float intake, float intakelift)
 	LifterCommand_Prev = LifterCommand_Cur;
 	LifterCommand_Cur = intakelift;
 	Intake->Set(intake);
+	SmartDashboard::PutNumber("BeaterLiftCommand",intakelift);
 
 	LiftEncoder_Cur = GetLiftEncoder();
 	if((fabs(LifterCommand_Prev) > .1f) && (fabs(LifterCommand_Cur) < .1f))
 	{
 		printf("Intake lift released, HOLD: %d\r\n",LiftEncoder_Cur);
-		SetLift(LiftEncoder_Cur);
-		LiftPIDController->Reset();
-		LiftPIDController->Enable();
+		IntakeLift->Set(0.0f);
+		//SetLift(LiftEncoder_Cur);
+		//LiftPIDController->Reset();
+		//LiftPIDController->Enable();
 	}
 
 	if(fabs(LifterCommand_Cur) > 0.1f)
@@ -147,17 +149,26 @@ void IntakeClass::SendData()
 }
 float IntakeClass::Validate_Lift_Command(float cmd)
 {
-#if 0
+#if 01
 	int lift = GetLiftEncoder();
-	if (limitswitch)   // if cmd is moving turret toward lower angle...
+	//when cmd is positive the intake bar moves up
+	if (cmd < 0.0)   // if cmd is moving turret toward lower angle...
 	{
-		if (lift < INTAKE_LIFT_MIN)  // and it is past the lowest angle allowed
+		//LimitSwitch->Get is false when it sees metal
+		bool limit_switch_triggered = (LimitSwitch->Get() == false);
+		if ((lift < INTAKE_LIFT_MIN) || limit_switch_triggered)
 		{
-			//float error = ARM_TURRET_MIN_ENCODER - tur;
-			// BAD!
 			return 0.0f;
 		}
 	}
+	else if (cmd > 0.0f)
+	{
+		if (lift > INTAKE_LIFT_MAX)
+		{
+			return 0.0f;
+		}
+	}
+
 #endif
 	return cmd;
 }

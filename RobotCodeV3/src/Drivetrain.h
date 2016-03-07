@@ -9,28 +9,26 @@
 #define SRC_DRIVETRAIN_H_
 
 #include "WPILib.h"
-#include "IMUProtocol.h"
-#include "IMURegisters.h"
 #include "AHRS.h"
-//#include "Gyro.h"
+#include "AnalogGyro.h"
 
 
 class Drivetrain
 {
+private:
+
+	AHRS *imu;
+	AnalogGyro *gyro;
 
 public:
-	AHRS *imu;
+
+
 	bool first_iteration;
 
 	Victor *LeftDrive;
 	Victor *RightDrive;
 	Victor *LeftDrive2;
 	Victor *RightDrive2;
-
-	//Gyro *gyro;
-
-	float currentGyro;
-	float targetGyro;
 
 	Encoder *LeftEncoder;
 	Encoder *RightEncoder;
@@ -76,10 +74,12 @@ public:
 	int GetLeftEncoder();
 	int GetRightEncoder();
 	void ResetEncoders_Timers();
+
 	void Zero_Yaw();
 	void IMUCalibration();
-
 	float ComputeAngleDelta(float t);
+	float GetHeading(void);
+
 	void UpdateEBrake(int enable,int targ);
 
 	void StandardTank(float Left, float Right);

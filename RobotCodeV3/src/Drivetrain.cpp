@@ -5,17 +5,24 @@
  *      Author: 987
  */
 
+
 #include <Drivetrain.h>
+#include <stdlib.h>
 #include "Defines.h"
 
 Drivetrain::Drivetrain()
 {
-#if USING_MXP
-	//uint8_t update_rate_hz = 50;
-	imu = new AHRS (SerialPort::Port::kMXP);
-//	imu = NULL;
-#else
 	imu = NULL;
+	gyro = NULL;
+
+#if USING_MXP
+	imu = new AHRS (SerialPort::Port::kMXP);
+#endif
+#if USING_GYRO
+	gyro = new AnalogGyro(1);
+	//gyro->SetSensitivity();
+	gyro->Calibrate();
+	gyro->Reset();
 #endif
 
 	first_iteration = true;
@@ -26,11 +33,6 @@ Drivetrain::Drivetrain()
 	LeftEncoder = new Encoder(Encoder_Drive_Left_1, Encoder_Drive_Left_2, false,Encoder::EncodingType::k4X);
 	RightEncoder = new Encoder(Encoder_Drive_Right_1, Encoder_Drive_Right_2, false,Encoder::EncodingType::k4X);
 	disableInput = false;
-	//gyro = new Gyro(1);
-	//gyro->Calibrate(.007);
-	//gyro->InitGyro();
-	currentGyro = 0;
-	targetGyro = 0;
 
 	NormalShiftHigh = new Solenoid(Sol_Shifter_Inner_in);
 	NormalShiftLow = new Solenoid(Sol_Shifter_Inner_out);
@@ -143,13 +145,6 @@ void Drivetrain::UpdateEBrake(int enable,int targ)
 		RightEncoder->Reset();
 	}
 }
-void Drivetrain::Zero_Yaw()
-{
-	if (imu != NULL)
-	{
-		imu->ZeroYaw();
-	}
-}
 
 void Drivetrain::ResetEncoders_Timers()
 {
@@ -157,14 +152,25 @@ void Drivetrain::ResetEncoders_Timers()
 	RightEncoder->Reset();
 }
 int Drivetrain::GetLeftEncoder()
-		{
+{
 	return LeftEncoder->Get();
-		}
+}
 int Drivetrain::GetRightEncoder()
 {
 	return RightEncoder->Get();
 }
 
+void Drivetrain::Zero_Yaw()
+{
+	if (imu != NULL)
+	{
+		imu->ZeroYaw();
+	}
+	if (gyro != NULL)
+	{
+		gyro->Reset();
+	}
+}
 void Drivetrain::IMUCalibration()
 {
 	if ( first_iteration && (imu != NULL))
@@ -177,13 +183,22 @@ void Drivetrain::IMUCalibration()
 		}
 	}
 }
+float Drivetrain::GetHeading(void)
+{
+	if(imu != NULL)
+	{
+		return imu->GetYaw();
+	}
+	if(gyro != NULL)
+	{
+		return gyro->GetAngle();
+	}
+	return 0.0f;
+}
+
 float Drivetrain::ComputeAngleDelta(float t)
 {
-	if(imu == NULL)
-	{
-		//return 0.0f;
-	}
-	float cur = imu->GetYaw();
+	float cur = GetHeading();
 	float err2 = t - cur;
 	return err2;
 }
@@ -394,5 +409,5 @@ void Drivetrain::SendData()
 	SmartDashboard::PutNumber("ToggleDT",ToggleState);
 	SmartDashboard::PutNumber("ToggleNeut",ToggleStateNeutral);
 	SmartDashboard::PutNumber("timer",transitionwait->Get());
-	SmartDashboard::PutNumber("Yaw",  imu->GetYaw());
+	SmartDashboard::PutNumber("Yaw", GetHeading());
 }

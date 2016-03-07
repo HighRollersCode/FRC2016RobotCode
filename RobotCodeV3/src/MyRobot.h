@@ -36,6 +36,9 @@ public:
 	TargetingSystemClient *TargClient;
 	Auton *AutonomousControl;
 
+	Compressor *Comp;
+	Relay *CompRelay;
+
 	Timer *ReConnectTimer;
 	Timer *SmartDashTimer;
 	Timer *SafeTimer;
@@ -65,6 +68,7 @@ public:
 	void Send_Smartdashboard_Data(void);
 	void LightUpdate();
 	void ConnectionUpdate();
+	void CompressorUpdate();
 
 	void Shutdown_Jetson(void);
 	void Jetson_Connection();

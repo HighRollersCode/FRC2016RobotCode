@@ -21,12 +21,16 @@ protected:
 };
 
 RobotDemo * RobotDemo::TheRobot = NULL;
-//auto grip = NetworkTable::GetTable("grip");
+
+
+
 RobotDemo::RobotDemo(void)
 {
-	printf("Make Smartdash\r\n");
-
 	TheRobot = this;
+
+	//printf("Make Smartdash\r\n");
+	SmartDashboard::init();
+
 	commandLeft = 0;
 	commandArmShooter = 0;
 	commandRight = 0;
@@ -47,6 +51,10 @@ RobotDemo::RobotDemo(void)
 	TargClient->Connect(JETSON_IP,JETSON_PORT);
 	printf("TargClient Initialized\r\n");
 	AutonomousControl = new Auton(DriveTrain,Arm,&DriverStation::GetInstance(),Intake,CollManager,TargClient);
+
+	Comp = new Compressor();
+	Comp->SetClosedLoopControl(true);
+	CompRelay = new Relay(1,Relay::Direction::kBothDirections);
 
 	ReConnectTimer = new Timer();
 	ReConnectTimer->Reset();
@@ -91,22 +99,8 @@ RobotDemo::RobotDemo(void)
 	//camera->SetExposureManual(50); // change this value
 	//camera->SetBrightness(20); // change this value
 	//CameraServer::GetInstance()->StartAutomaticCapture("cam0");
-
-//#if 0 // GRIP
-
-	/*const char * const JAVA = "/usr/local/frc/JRE/bin/java";
-	char *GRIP_ARGS[5] = { "java", "-jar", "/home/lvuser/grip.jar", "/home/lvuser/project.grip", NULL };
-	if (fork() == 0)
-	{
-		if (execv(JAVA, GRIP_ARGS) == -1)
-		{
-			perror("Error running GRIP");
-		}
-	}
-	*/
-//#endif
-
 }
+
 void RobotDemo::Jetson_Connection()
 {
 	if(TargClient->Get_Connected() == false && ReConnectTimer->Get() > 5)
@@ -129,7 +123,9 @@ void RobotDemo::Disabled()
 	while(IsDisabled())
 	{
 		Jetson_Connection();
+		Send_Smartdashboard_Data();
 	}
+	Wait(0.001);
 }
 void RobotDemo::LightUpdate()
 {
@@ -263,17 +259,17 @@ void RobotDemo::Send_Smartdashboard_Data(void)
 {
 	if(SmartDashTimer->Get() > .1f)
 	{
+		SmartDashTimer->Reset();
+
 		DriveTrain->SendData();
 		Intake->SendData();
 		Arm->SendData();
+
 		SmartDashboard::PutBoolean("Jetson Connection", TargClient->Get_Connected());
-		SmartDashTimer->Reset();
-		SmartDashboard::init();
 		SmartDashboard::PutData("Shutdown Jetson",new ShutdownJetsonCommand());
 		SmartDashboard::PutNumber("INTAKELIFT",commandintakelift);
 		SmartDashboard::PutNumber("x",TargClient->Get_Target_Distance());
 		SmartDashboard::PutNumber("y",TargClient->Get_Target_Angle());
-
 	}
 }
 
@@ -332,11 +328,23 @@ void RobotDemo::OperatorControl(void)
 			Intake->ResetEncoderLiftDown();
 
 			DriveTrain->ResetEncoders_Timers();
-			DriveTrain->imu->ZeroYaw();
+			DriveTrain->Zero_Yaw();
 		}
 		ConnectionUpdate();
 		LightUpdate();
+		CompressorUpdate();
 		Wait(0.001);
+	}
+}
+void RobotDemo::CompressorUpdate()
+{
+	if(Comp->Enabled())
+	{
+		CompRelay->Set(Relay::Value::kForward);
+	}
+	else
+	{
+		CompRelay->Set(Relay::Value::kOff);
 	}
 }
 void RobotDemo::ConnectionUpdate()

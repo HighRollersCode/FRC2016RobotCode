@@ -20,8 +20,8 @@ public:
 
 
 
-	Talon *Intake;
-	Talon *IntakeLift;
+	Victor *Intake;
+	Victor *IntakeLift;
 	ResettableEncoderClass *LiftEncoder;
 
 	DigitalInput *LimitSwitch;
