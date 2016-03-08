@@ -276,7 +276,6 @@ void ArmClass::UpdateTurret(float Turret)
 			ArmTurret->Set(0);
 		}
 	}
-
 }
 
 void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset, bool EnableTracking,float cX,float cY,float calX,float calY)
@@ -305,6 +304,9 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	}
 	if(CurrentEnableTracking)
 	{
+		// When auto-aiming, turn on the shooter wheels
+		Shooter = 1.0f;
+
 		ArmPIDController->Enable();
 		TurretPIDController->Enable();
 		if((fabs(LastMoveByDegreesX) > LOCKON_DEGREES_X) || (fabs(LastMoveByDegreesY) > LOCKON_DEGREES_Y))
@@ -315,7 +317,7 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 		{
 			// if the user was holding the shooter wheels on AND we have been locked on,
 			// then do a quick auto shot.
-			if(Shooter == 1.0f)
+			if(Shooter == 1.0f)  // NOTE, we now force Shooter on when auto-aiming (top of this CurrentEnableTracking block)
 			{
 				if(LastShotTimer->Get() > 1.5f)
 				{
@@ -352,17 +354,19 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 		ResetPostion();
 	}
 
+	if (!isauto)
+	{
+		ArmShooter->Set(Shooter);
+		ArmShooter2->Set(-Shooter);
+	}
+
 	if(!isauto && !CurrentEnableTracking)
 	{
-		float a = Shooter;
 		PrevBallTog = CurrentBallTog;
 		CurrentBallTog = Ball;
 
 		PrevResetInput = CurrentResetInput;
 		CurrentResetInput = Reset;
-
-		ArmShooter->Set(a);
-		ArmShooter2->Set(-a);
 
 		if(Ball)
 		{
@@ -375,13 +379,15 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 			ShotExtend->Set(false);
 		}
 	}
-	//SmartDashboard::PutData("ArmPID",ArmPIDController);
-	//SmartDashboard::PutData("TurretPID",TurretPIDController);
-	//LiveWindow::GetInstance()->AddActuator("ArmPID","ArmPIDController",ArmPIDController);
 }
 void ArmClass::StartTracking(int enable)
 {
-	CurrentEnableTracking = (enable != 0);
+	// Set isTracking to true, then the Auto code will pass it in to Update
+	// In Update, CurrentEnableTracking will get set.  This way the transition to
+	// and from CurrentEnableTracking will work correctly.
+	isTracking = enable;
+	PreviousEnableTracking = false;
+	//CurrentEnableTracking = (enable != 0);
 }
 
 void ArmClass::AutonomousTrackingUpdate(float tx, float ty, float crossX, float crossY)
@@ -628,7 +634,7 @@ float ArmClass::FSign(float a)
 }
 bool ArmClass::TurretRoughlyCentered()
 {
-	if(abs(GetTurretEncoder()) <= 100)
+	if(abs(GetTurretEncoder()) <= 50)
 	{
 		return true;
 	}

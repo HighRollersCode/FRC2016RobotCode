@@ -68,6 +68,10 @@ RobotDemo::RobotDemo(void)
 	SafeTimer->Reset();
 	SafeTimer->Start();
 
+	ArmIntakeTimer = new Timer();
+	ArmIntakeTimer->Reset();
+	ArmIntakeTimer->Start();
+
 	JetsonConnected = false;
 
 	prevIntakeArm = false;
@@ -200,13 +204,20 @@ void RobotDemo::UpdateInputs()
 			Arm->SetArm(Preset_Arm_Intake);
 			SafeTimer->Reset();
 			SafeTimer->Start();
+			ArmIntakeTimer->Reset();
+			ArmIntakeTimer->Start();
 		}
 		else if(curIntakeArm == false && prevIntakeArm == true)
 		{
-			Arm->ArmPIDController->Enable();
-			Arm->SetArm(Preset_Arm_Safe_Zone);
-			SafeTimer->Reset();
-			SafeTimer->Start();
+			if(ArmIntakeTimer->Get() > .02f)
+			{
+				Arm->ArmPIDController->Enable();
+				Arm->SetArm(Preset_Arm_Safe_Zone);
+				SafeTimer->Reset();
+				SafeTimer->Start();
+				ArmIntakeTimer->Reset();
+				ArmIntakeTimer->Start();
+			}
 		}
 	}
 	if(SafeTimer->Get() > 1.0)

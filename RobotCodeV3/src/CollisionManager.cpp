@@ -92,16 +92,24 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 
 				IntakeRef->GotoIntake();
 				state = 1;
+				counter = 0;
 				break;
 			case 1 :
 				//Reset Turret and wait Intake
-				if(fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 25)
+				if(fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 20)
+				{
+					counter++;
+				}
+				else
+				{
+					counter = 0;
+				}
+				if (counter > 100)
 				{
 					ArmRef->TurretPIDController->Enable();
 					state = 2;
 					ArmRef->ResetTurret();
 				}
-
 				break;
 			case 2 :
 				if(fabs(ArmRef->GetTurretEncoder()) <= 10)
@@ -172,8 +180,9 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 						transitioning = false;
 
 					}
-				}
+					break;
 			}
+		}
 		else if(currentMode == RobotMode::Defensive)
 		{
 			switch(state)
@@ -193,7 +202,6 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 						state = 2;
 						ArmRef->SetArm(Preset_Arm_Defense);
 					}
-
 					break;
 				case 2 :
 					if(fabs(ArmRef->GetLifterEncoder()-Preset_Arm_Defense) <= 200)

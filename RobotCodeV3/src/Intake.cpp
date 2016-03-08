@@ -79,9 +79,9 @@ void IntakeClass::Update(float intake, float intakelift)
 	{
 		printf("Intake lift released, HOLD: %d\r\n",LiftEncoder_Cur);
 		IntakeLift->Set(0.0f);
-		//SetLift(LiftEncoder_Cur);
-		//LiftPIDController->Reset();
-		//LiftPIDController->Enable();
+		SetLift(LiftEncoder_Cur);
+		LiftPIDController->Reset();
+		LiftPIDController->Enable();
 	}
 
 	if(fabs(LifterCommand_Cur) > 0.1f)

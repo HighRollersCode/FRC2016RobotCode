@@ -41,6 +41,7 @@ public:
 	Timer *PresetTimer;
 
 	int state;
+	int counter;
 	bool transitioning;
 	RobotMode currentMode;
 	CollisionManager(IntakeClass *IntakeRef, ArmClass *ArmRef );

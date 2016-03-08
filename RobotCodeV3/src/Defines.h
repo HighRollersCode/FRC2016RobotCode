@@ -54,7 +54,7 @@
 
 #define Preset_Intake_Floor -500
 #define Preset_Intake_Defense -10
-#define Preset_Intake_Intake -450
+#define Preset_Intake_Intake -435
 #define Preset_Intake_Down -500     // value to use when reseting the intake encoder in-match
 #define INTAKE_LIFT_MIN -500
 #define INTAKE_LIFT_MAX 0

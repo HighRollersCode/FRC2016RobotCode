@@ -42,6 +42,7 @@ public:
 	Timer *ReConnectTimer;
 	Timer *SmartDashTimer;
 	Timer *SafeTimer;
+	Timer *ArmIntakeTimer;
 	int connectionattempts;
 
 	bool JetsonConnected;
