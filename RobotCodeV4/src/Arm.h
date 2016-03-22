@@ -40,6 +40,11 @@ public:
 
 	bool isTracking;
 
+	bool BypassEncoderLimits;
+
+	bool CurEmergencyToggle;
+	bool PrevEmergencyToggle;
+
 	float LastMoveByDegreesX;
 	float LastMoveByDegreesY;
 	Relay *TargetingLights;
@@ -66,6 +71,7 @@ public:
 	PIDController *TunerPIDController;
 
 	void Auto_Start();
+	void Tele_Start();
 	void Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX, float cY,float calX,float calY);
 	void UpdateLift(float ArmLift);
 	void UpdateTurret(float Turret);
@@ -96,6 +102,7 @@ public:
 	void ResetEncoderLifter();
 	void ResetEncoderLifterDown();
 	void ResetEncoderTurret();
+	void UpdateEmergency(bool curtog);
 	float FSign(float a);
 	float Clamp_Target(float tar, float lowerlim, float upperlim);
 	bool TurretRoughlyCentered();

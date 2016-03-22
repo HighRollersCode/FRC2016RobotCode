@@ -90,7 +90,7 @@ void Auton::AutonWait2(float Seconds,int brake)
 void Auton::AutonWaitForTarget(float Seconds)
 {
 	const float MAX_X_ERROR = 2.0f;
-	const float MAX_Y_ERROR = 5.0f;
+	const float MAX_Y_ERROR = 3.0f;
 	const float MIN_LOCK_TIME = 0.25f;
 
 	float targ = AutonTimer->Get() + Seconds;
@@ -267,7 +267,3 @@ void Auton::Auto_DriveEncoder(float Forward, float Turn, float Ticks)
 	printf("Finished Driving");
 	DriveTrain->Drive_Auton(0, 0);
 }
-/*void Auto_CameraAim()
-{
-
-}*/

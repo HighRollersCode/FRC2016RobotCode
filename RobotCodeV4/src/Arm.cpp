@@ -9,21 +9,23 @@
 #include "Defines.h"
 #include "ResettableEncoder.h"
 
-
-const float MIN_ARM_LIFT_CMD = 0.1f;
-
+//const float MIN_ARM_LIFT_CMD = 0.1f;
+const float MIN_ARM_LIFT_CMD = 0.35f;
+//const float ARM_LIFT_P = -.0005f;
+//const float ARM_LIFT_I = -0.00001f;
 const float ARM_LIFT_P = -.0005f;
-const float ARM_LIFT_I = -0.00001f;
-const float ARM_LIFT_D = .0001f;
+const float ARM_LIFT_I = -0.000005f;//1f;
+const float ARM_LIFT_D = 0;//.0001f;
 
-
-const float MIN_TURRET_CMD = 0.12f;
-
+//const float MIN_TURRET_CMD = 0.12f;
+const float MIN_TURRET_CMD = 0.09f;
+//const float ARM_TURRET_P = -.001125f;
+//const float ARM_TURRET_I = -.000025f;
 const float ARM_TURRET_P = -.001125f;
-const float ARM_TURRET_I = -.000025f;
+const float ARM_TURRET_I = -.00001f;
 const float ARM_TURRET_D = 0.0f;
 
-const float ARM_TURRET_TOLERANCE = 3;
+const float ARM_TURRET_TOLERANCE = 1;
 
 const float LOCKON_DEGREES_X = 1.75f;
 const float LOCKON_DEGREES_Y = 2.0f;
@@ -129,6 +131,8 @@ ArmClass::ArmClass()
 	ShotTimer = new Timer();
 	isTracking = false;
 
+	BypassEncoderLimits = false;
+
 	ResetState = 0;
 
 	ArmLifterEncoder_Cur = 0;
@@ -140,6 +144,9 @@ ArmClass::ArmClass()
 
 	CurrentEnableTracking = false;
 	PreviousEnableTracking = false;
+
+	CurEmergencyToggle = false;
+	PrevEmergencyToggle = false;
 
 	LastMoveByDegreesX = 360.0f;
 	LastMoveByDegreesY = 360.0f;
@@ -218,6 +225,8 @@ void ArmClass::Auto_Start()
 	SetArm(GetLifterEncoder());
 
 	isShooting = false;
+	isTracking = false;
+
 	ShotStage = 0;
 	ShotTimer->Reset();
 
@@ -242,15 +251,22 @@ void ArmClass::UpdateLift(float ArmLift)
 		//SetArm(ArmLifterEncoder_Cur);
 		//ArmPIDController->Enable();
 	//}
+	float tempp = ARM_LIFT_P;
+	float tempi = ARM_LIFT_I;
+	float tempd = ARM_LIFT_D;
+	if(fabs(ArmPIDController->GetError()) > 1000)
+	{
+		tempi = 0;
+	}
+	if(GetLifterEncoder() > 0)
+	{
+		const float backscale = 0.75f;
 
-	if(fabs(ArmPIDController->GetError()) < 1000)
-	{
-		ArmPIDController->SetPID(ARM_LIFT_P,ARM_LIFT_I,ARM_LIFT_D);
+		tempp *= backscale;
+		tempi *= backscale;
+		tempd *= backscale;
 	}
-	else
-	{
-		ArmPIDController->SetPID(ARM_LIFT_P,0,ARM_LIFT_D);
-	}
+	ArmPIDController->SetPID(tempp,tempi,tempd);
 
 	if(fabs(ArmLifterCommand_Cur) > .1f)
 	{
@@ -309,7 +325,33 @@ void ArmClass::UpdateTurret(float Turret)
 		}
 	}
 }
+void ArmClass::Tele_Start()
+{
+	CurrentEnableTracking = false;
+		PreviousEnableTracking = false;
 
+		LastMoveByDegreesX = 360.0f;
+		LastMoveByDegreesY = 360.0f;
+
+		ArmPIDController->Disable();
+		ArmPIDController->Reset();
+		TurretPIDController->Disable();
+		TurretPIDController->Reset();
+		SetTurret(GetTurretEncoder());
+		SetArm(GetLifterEncoder());
+
+		isShooting = false;
+		isTracking = false;
+
+		ShotStage = 0;
+		ShotTimer->Reset();
+
+		ArmLockonTimer->Reset();
+		ArmLockonTimer->Start();
+
+		LastShotTimer->Reset();
+		LastShotTimer->Start();
+}
 void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset, bool EnableTracking,float cX,float cY,float calX,float calY)
 {
 	PreviousEnableTracking = CurrentEnableTracking;
@@ -318,6 +360,7 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	{
 		ArmPIDController->Reset();
 		TurretPIDController->Reset();
+		ArmLockonTimer->Reset();
 		ArmLockonTimer->Start();
 	}
 	if(!CurrentEnableTracking && PreviousEnableTracking)
@@ -359,6 +402,10 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 					LastShotTimer->Reset();
 					LastShotTimer->Start();
 				}
+			}
+			else
+			{
+				printf("SHOT!\r\n");
 			}
 		}
 		else if (Ball)
@@ -491,7 +538,7 @@ void ArmClass::FullShotUpdate()
 			ShotStage = 3;
 			break;
 		case 3:
-			if(ShotTimer->Get() > .25f)
+			if(ShotTimer->Get() > .9f)
 			{
 				ShotExtend->Set(false);
 				ShotRetract->Set(true);
@@ -663,6 +710,15 @@ void ArmClass::SendData()
 	SmartDashboard::PutBoolean("TurretPIDEnabled", TurretPIDController->IsEnabled());
 
 }
+void ArmClass::UpdateEmergency(bool curtog)
+{
+	PrevEmergencyToggle = CurEmergencyToggle;
+	CurEmergencyToggle = curtog;
+	if(!PrevEmergencyToggle && CurEmergencyToggle)
+	{
+		BypassEncoderLimits = !BypassEncoderLimits;
+	}
+}
 float ArmClass::FSign(float a)
 {
 	if(a >= 0)
@@ -694,6 +750,10 @@ float ArmClass::Turret_Encoder_To_Degrees(int enc)
 float ArmClass::Validate_Turret_Command(float cmd, bool ispidcmd)
 {
 #if 01
+	if(BypassEncoderLimits)
+	{
+		return cmd;
+	}
 	int tur = GetTurretEncoder();
 	if (cmd >= 0.0f)   // if cmd is moving turret toward lower angle...
 	{
@@ -751,6 +811,10 @@ float ArmClass::Compute_Lift_Error_Correction_Command(float error)
 float ArmClass::Validate_Lift_Command(float cmd, bool ispidcmd)
 {
 #if 01
+	if(BypassEncoderLimits)
+	{
+		return cmd;
+	}
 	// Validating the lift command.
 	// We broke the limits down into two cases.
 	// 1)  When the turret is facing forward (0deg) the arm can go down to 0deg or up to (180-39.2 = 140.8deg)

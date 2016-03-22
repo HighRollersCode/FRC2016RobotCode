@@ -422,12 +422,15 @@ void RobotDemo::Load_Scripts()
 
 	// Load all of the auto-mode scripts
 	m_ScriptSystem->Set_Auto_Script(1,"AUTO_ONEBALL_LOWBAR.hrs");
+	m_ScriptSystem->Set_Auto_Script(11,"AUTO_ONEBALL_LOWBAR_BACK.hrs");
 	m_ScriptSystem->Set_Auto_Script(2,"AUTO_TWOBALL_LOWBAR.hrs");
 	m_ScriptSystem->Set_Auto_Script(3,"AUTO_TWOBALL_SPYBOT.hrs");
 	m_ScriptSystem->Set_Auto_Script(4,"AUTO_ONEBALL_DEFENSE_LEFT.hrs");
+	m_ScriptSystem->Set_Auto_Script(41,"AUTO_ONEBALL_DEFENSE_RIGHT.hrs");
+	m_ScriptSystem->Set_Auto_Script(42,"AUTO_ONEBALL_DEFENSE_CENTER.hrs");
 	m_ScriptSystem->Set_Auto_Script(5,"AUTO_TEST_ONEBALL_SHOT.hrs");
 	m_ScriptSystem->Set_Auto_Script(6,"AUTO_ONEBALL_SHOWOFF.hrs");
-
+	m_ScriptSystem->Set_Auto_Script(999,"EMPTY.hrs");
 
 	/*m_ScriptSystem->Set_Auto_Script(2,"SerpentineStrafe.hrs");
 	m_ScriptSystem->Set_Auto_Script(3,"Autoconhook.hrs");

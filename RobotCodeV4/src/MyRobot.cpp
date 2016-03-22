@@ -39,6 +39,7 @@ RobotDemo::RobotDemo(void)
 	commandintake = 0;
 	commandintakelift = 0;
 	connectionattempts = 0;
+	intele = 0;
 	leftStick = new Joystick(0);
 	rightStick = new Joystick(1);			// create the joysticks
 	turretStick = new Joystick(2);
@@ -71,6 +72,9 @@ RobotDemo::RobotDemo(void)
 	ArmIntakeTimer = new Timer();
 	ArmIntakeTimer->Reset();
 	ArmIntakeTimer->Start();
+
+	MatchTimer = new Timer();
+
 
 	JetsonConnected = false;
 
@@ -178,7 +182,6 @@ void RobotDemo::Autonomous(void)
 }
 void RobotDemo::UpdateInputs()
 {
-	//float deadzone = .1;
 	commandLeft = leftStick->GetY();
 	commandRight = rightStick->GetY();
 	commandArmShooter = turretStick->GetZ();
@@ -188,14 +191,6 @@ void RobotDemo::UpdateInputs()
 	prevIntakeArm = curIntakeArm;
 	curIntakeArm = rightStick->GetTrigger();
 
-	/*if(rightStick->GetY() == deadzone || rightStick->GetY() > 0 )
-	{http://roborio-987-frc.local/
-		commandTurn = rightStick->GetY()-rightStick->GetY();
-	}
-	if(rightStick->GetY() == -deadzone || rightStick->GetY() < 0 )
-	{
-				commandTurn = rightStick->GetY()+rightStick->GetY();
-	}*/
 	if(CollManager->currentMode == CollisionManager::RobotMode::Intake)
 	{
 		if(curIntakeArm == true && prevIntakeArm == false)
@@ -255,15 +250,10 @@ void RobotDemo::UpdateInputs()
 	{
 		commandArmShooter = -1.0f;
 	}
-	/*else if(turretStick->GetRawButton(7)) gth - BUTTON7 Does arm encoder zero now...
+	else if(turretStick->GetRawButton(7))
 	{
-		//commandArmShooter = -(turretStick->GetZ()-1)*.f;
-		commandArmShooter = 0.50f;
-	}*/
-	/*if(turretStick->GetRawButton(2))
-	{
-		commandArmShooter = -1.0f;
-	}*/
+		commandArmShooter = 1.0f;
+	}
 }
 
 void RobotDemo::Send_Smartdashboard_Data(void)
@@ -281,10 +271,14 @@ void RobotDemo::Send_Smartdashboard_Data(void)
 		SmartDashboard::PutNumber("INTAKELIFT",commandintakelift);
 		SmartDashboard::PutNumber("x",TargClient->Get_Target_Distance());
 		SmartDashboard::PutNumber("y",TargClient->Get_Target_Angle());
+		SmartDashboard::PutBoolean("Limit Enabled", Arm->BypassEncoderLimits);
+		if(MatchTimer != NULL)
+		{
+			SmartDashboard::PutNumber("MATCHTIMER",MatchTimer->Get());
+		}
 	}
 }
-
-void RobotDemo::OperatorControl(void)
+void RobotDemo::ResetState()
 {
 	Arm->ArmPIDController->Reset();
 	Arm->TurretPIDController->Reset();
@@ -295,13 +289,39 @@ void RobotDemo::OperatorControl(void)
 	CollManager->transitioning = false;
 	CollManager->currentMode = CollisionManager::Free;
 	Arm->isauto = false;
+	DriveTrain->StandardTank(0,0);
+	Arm->Tele_Start();
 
+}
+void RobotDemo::OperatorControl(void)
+{
+
+	ResetState();
+	//MatchTimer->Reset();
 	while (IsOperatorControl())
 	{
+		int prevtele = intele;
+		intele  = 1;
+		if(prevtele == 0 && intele == 1)
+		{
+			MatchTimer->Reset();
+			MatchTimer->Start();
+		}
+
+
+		if(MatchTimer->Get() > 134.9)
+		{
+			if(DriverStation::GetInstance().IsFMSAttached())
+			{
+				Shutdown_Jetson();
+			}
+		}
+
 		// If we are disabled in OperatorControl, make sure the jetson connection is live
 		// This will only retry the connection once every few seconds.
 		if (IsDisabled())
 		{
+			ResetState();
 			Jetson_Connection();
 		}
 
@@ -312,6 +332,7 @@ void RobotDemo::OperatorControl(void)
 		Arm->Update(commandLift, -commandArmShooter, -commandTurret, turretStick->GetTrigger(), turretStick->GetRawButton(11),
 				turretStick->GetRawButton(2),TargClient->Get_Target_Distance(),TargClient->Get_Target_Angle(),
 				TargClient->Get_Cal_X(),TargClient->Get_Cal_Y());
+		Arm->UpdateEmergency(turretStick->GetRawButton(8));
 		Intake->Update(-commandintake, -commandintakelift);
 		DriveTrain->Shifter_Update(leftStick->GetTrigger(), leftStick->GetRawButton(10),leftStick->GetRawButton(11));
 		DriveTrain->PTO_Update(leftStick->GetRawButton(4));
@@ -325,7 +346,7 @@ void RobotDemo::OperatorControl(void)
 			Shutdown_Jetson();
 		}
 
-		if (turretStick->GetRawButton(7))
+		if (turretStick->GetRawButton(9))
 		{
 			// Reset encoders assuming arm is in the UP postion and Intake is UP
 			// TRUE ZERO.
