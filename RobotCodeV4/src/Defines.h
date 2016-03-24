@@ -54,8 +54,9 @@
 
 #define Preset_Intake_Floor -500
 #define Preset_Intake_Defense -10
-#define Preset_Intake_Intake -435
+#define Preset_Intake_Intake -423
 #define Preset_Intake_Down -500     // value to use when reseting the intake encoder in-match
+#define Preset_Intake_Tower_Shot -195
 #define INTAKE_LIFT_MIN -500
 #define INTAKE_LIFT_MAX 0
 
@@ -64,7 +65,7 @@
 #define Preset_Arm_Intake -5760
 #define Preset_Arm_Back_Shot -2826
 #define Preset_Arm_Far_Shot -2826
-#define Preset_Arm_Tower_Shot -1868
+#define Preset_Arm_Tower_Shot -979
 #define Preset_Arm_Safe_Zone -5190
 #define Preset_Arm_Down -5700		// value to use when resetting the arm lift encoder in-match
 
@@ -88,10 +89,8 @@
 #define ARM_LIFT_MAX_WHEN_CENTERED 		140.8f //140.8
 #define ARM_LIFT_MIN_WHEN_FWD 			15.0f
 #define ARM_LIFT_MAX_WHEN_FWD 			140.8f
-#define ARM_LIFT_MIN_WHEN_SIDEWAYS  	23.0f
+#define ARM_LIFT_MIN_WHEN_SIDEWAYS  	30.0f
 #define ARM_LIFT_MAX_WHEN_SIDEWAYS		147.0f
-
-
 
 #endif
 

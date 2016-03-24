@@ -254,6 +254,14 @@ void RobotDemo::UpdateInputs()
 	{
 		commandArmShooter = 1.0f;
 	}
+	/*if(turretStick->GetRawButton(6))
+	{
+		commandArmShooter = (turretStick->GetZ()-1);
+	}
+	else if(turretStick->GetRawButton(7))
+	{
+		commandArmShooter = (-turretStick->GetZ()+1);
+	}*/
 }
 
 void RobotDemo::Send_Smartdashboard_Data(void)
@@ -272,6 +280,7 @@ void RobotDemo::Send_Smartdashboard_Data(void)
 		SmartDashboard::PutNumber("x",TargClient->Get_Target_Distance());
 		SmartDashboard::PutNumber("y",TargClient->Get_Target_Angle());
 		SmartDashboard::PutBoolean("Limit Enabled", Arm->BypassEncoderLimits);
+		SmartDashboard::PutNumber("GetZ", turretStick->GetZ());
 		if(MatchTimer != NULL)
 		{
 			SmartDashboard::PutNumber("MATCHTIMER",MatchTimer->Get());

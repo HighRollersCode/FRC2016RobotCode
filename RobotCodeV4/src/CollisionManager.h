@@ -21,7 +21,7 @@ public:
 		Shooting,
 		Intake,
 		Defensive,
-		TowerShot//,
+		TowerShot,
 		//EndGame
 	};
 	IntakeClass *IntakeRef;

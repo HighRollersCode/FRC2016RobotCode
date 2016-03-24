@@ -328,29 +328,29 @@ void ArmClass::UpdateTurret(float Turret)
 void ArmClass::Tele_Start()
 {
 	CurrentEnableTracking = false;
-		PreviousEnableTracking = false;
+	PreviousEnableTracking = false;
 
-		LastMoveByDegreesX = 360.0f;
-		LastMoveByDegreesY = 360.0f;
+	LastMoveByDegreesX = 360.0f;
+	LastMoveByDegreesY = 360.0f;
 
-		ArmPIDController->Disable();
-		ArmPIDController->Reset();
-		TurretPIDController->Disable();
-		TurretPIDController->Reset();
-		SetTurret(GetTurretEncoder());
-		SetArm(GetLifterEncoder());
+	ArmPIDController->Disable();
+	ArmPIDController->Reset();
+	TurretPIDController->Disable();
+	TurretPIDController->Reset();
+	SetTurret(GetTurretEncoder());
+	SetArm(GetLifterEncoder());
 
-		isShooting = false;
-		isTracking = false;
+	isShooting = false;
+	isTracking = false;
 
-		ShotStage = 0;
-		ShotTimer->Reset();
+	ShotStage = 0;
+	ShotTimer->Reset();
 
-		ArmLockonTimer->Reset();
-		ArmLockonTimer->Start();
+	ArmLockonTimer->Reset();
+	ArmLockonTimer->Start();
 
-		LastShotTimer->Reset();
-		LastShotTimer->Start();
+	LastShotTimer->Reset();
+	LastShotTimer->Start();
 }
 void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset, bool EnableTracking,float cX,float cY,float calX,float calY)
 {
