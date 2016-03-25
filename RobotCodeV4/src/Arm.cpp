@@ -220,6 +220,7 @@ void ArmClass::Auto_Start()
 	ArmPIDController->Disable();
 	ArmPIDController->Reset();
 	TurretPIDController->Disable();
+
 	TurretPIDController->Reset();
 	SetTurret(GetTurretEncoder());
 	SetArm(GetLifterEncoder());
@@ -314,6 +315,7 @@ void ArmClass::UpdateTurret(float Turret)
 	if(fabs(TurretCommand_Cur) > .2f)
 	{
 		TurretPIDController->Disable();
+
 		turretOut = TurretCommand_Cur;
 		ArmTurret->Set(turretOut);
 	}
@@ -336,6 +338,7 @@ void ArmClass::Tele_Start()
 	ArmPIDController->Disable();
 	ArmPIDController->Reset();
 	TurretPIDController->Disable();
+
 	TurretPIDController->Reset();
 	SetTurret(GetTurretEncoder());
 	SetArm(GetLifterEncoder());
@@ -367,6 +370,7 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 	{
 		ArmPIDController->Disable();
 		TurretPIDController->Disable();
+
 		ArmLockonTimer->Stop();
 		ArmLockonTimer->Reset();
 	}
@@ -414,8 +418,8 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 			printf("Manual shot during tracking!\r\n");
 			ArmLockonTimer->Reset();
 		}
-		FullShotUpdate();
 	}
+	FullShotUpdate();
 
 	//TurretPIDController->SetPID(P*.001f, I*.00001f, 0.0f);
 
@@ -708,6 +712,7 @@ void ArmClass::SendData()
 	SmartDashboard::PutBoolean("CurrentEnableTracking",CurrentEnableTracking);
 	SmartDashboard::PutBoolean("LiftPIDEnabled", ArmPIDController->IsEnabled());
 	SmartDashboard::PutBoolean("TurretPIDEnabled", TurretPIDController->IsEnabled());
+	SmartDashboard::PutBoolean("isShooting", isShooting);
 
 }
 void ArmClass::UpdateEmergency(bool curtog)

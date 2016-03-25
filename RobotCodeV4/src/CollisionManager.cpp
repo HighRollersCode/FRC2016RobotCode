@@ -106,7 +106,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				{
 					counter = 0;
 				}
-				if (counter > 0)
+				if (counter > 2)
 				{
 					ArmRef->TurretPIDController->Enable();
 					state = 2;
@@ -141,6 +141,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 					state = 4;
 					transitioning = false;
 				}
+				break;
 			}
 		}
 		else if(currentMode == RobotMode::Shooting)
