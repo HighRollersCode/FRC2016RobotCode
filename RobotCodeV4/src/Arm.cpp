@@ -196,13 +196,13 @@ ArmClass::ArmClass()
 	TurretPIDController->SetContinuous(false);
 	TurretPIDController->Disable();
 	//TurretPIDController->SetAbsoluteTolerance(1);
-	TurretPIDController->SetInputRange(-1350,1350);
+	TurretPIDController->SetInputRange(ARM_TURRET_MIN_ENCODER,ARM_TURRET_MAX_ENCODER);
 	TurretPIDController->SetOutputRange(-1.0f,1.0f);
 	TunerPIDController = new PIDController(0,0,0,TurretEncoder,ArmTurret,.01f);
 	TunerPIDController->SetContinuous(false);
 	TunerPIDController->Disable();
 	TunerPIDController->SetAbsoluteTolerance(ARM_TURRET_TOLERANCE);
-	TunerPIDController->SetInputRange(-1221,1221);
+	TunerPIDController->SetInputRange(ARM_TURRET_MIN_ENCODER,ARM_TURRET_MAX_ENCODER);
 
 }
 
@@ -662,8 +662,11 @@ void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 
 		if (CurrentEnableTracking)
 		{
-			SetTurret(GetTurretEncoder()-(moveByX_Ticks* 1.0f)); //.85
-			SetArm(GetLifterEncoder()-(moveByY_Ticks* 1.0f));
+			const float FRACTION = 1.0f;
+			int new_turret_target = GetTurretEncoder()-(moveByX_Ticks* FRACTION);
+			int new_arm_target = GetLifterEncoder()-(moveByY_Ticks* FRACTION);
+			SetTurret(new_turret_target); //.85
+			SetArm(new_arm_target);
 		}
 	}
 }

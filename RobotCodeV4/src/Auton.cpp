@@ -229,6 +229,8 @@ void Auton::SendData()
 
 		DriveTrain->SendData();
 		Arm->SendData();
+		Intake->SendData();
+		Collision->SendData();
 		SmartDashboard::PutNumber("AUTOTIMER",AutonTimer->Get());
 	}
 }

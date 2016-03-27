@@ -19,8 +19,8 @@ Drivetrain::Drivetrain()
 	imu = new AHRS (SerialPort::Port::kMXP);
 #endif
 #if USING_GYRO
-	gyro = new AnalogGyro(1);
-	//gyro->SetSensitivity();
+	gyro = new AnalogGyro(0);
+	gyro->SetSensitivity(0.007f);
 	gyro->Calibrate();
 	gyro->Reset();
 #endif

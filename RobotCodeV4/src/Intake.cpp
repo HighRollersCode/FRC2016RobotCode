@@ -61,7 +61,7 @@ IntakeClass::IntakeClass()
 
 	//	.00075f
 	LiftEncoder->Reset();
-	LiftPIDController= new PIDController(.01f,.0005f,0,LiftEncoder,IntakeLift,.05f);
+	LiftPIDController= new PIDController(.011f,0.0f,0.0f,LiftEncoder,IntakeLift,.05f);
 	LiftPIDController->SetContinuous(false);
 	LiftPIDController->Disable();
 	LiftPIDController->SetAbsoluteTolerance(1);

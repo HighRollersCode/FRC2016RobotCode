@@ -54,7 +54,7 @@
 
 #define Preset_Intake_Floor -500
 #define Preset_Intake_Defense -10
-#define Preset_Intake_Intake -423
+#define Preset_Intake_Intake -448
 #define Preset_Intake_Down -500     // value to use when reseting the intake encoder in-match
 #define Preset_Intake_Tower_Shot -195
 #define INTAKE_LIFT_MIN -500
@@ -65,9 +65,11 @@
 #define Preset_Arm_Intake -5760
 #define Preset_Arm_Back_Shot -2826
 #define Preset_Arm_Far_Shot -2826
-#define Preset_Arm_Tower_Shot -979
+#define Preset_Arm_Tower_Shot -1275
 #define Preset_Arm_Safe_Zone -5190
 #define Preset_Arm_Down -5700		// value to use when resetting the arm lift encoder in-match
+
+#define Preset_Tower_Shot_Shooter_Wheels -0.45f
 
 #define Intake_Lift_Limit_Switch 10
 
@@ -75,10 +77,9 @@
 //  Encoder values to limit the arm movement to keep the arm within the 15" envelope around the robot
 //
 
-// The turret is zero'd when it is centered pointing forward.  It can move the same distance to the
-// left and to the right.
+// The turret is zero'd when it is centered pointing forward.
 #define ARM_TURRET_DEGREES_PER_TICK (90.0f / 1210.0f)
-#define ARM_TURRET_MIN_ENCODER	-1100    //-1400 changed to -1100 to prevent hitting the climbing arm
+#define ARM_TURRET_MIN_ENCODER	-1650    // we need a shot to the left in the spybot two-ball at -1500
 #define ARM_TURRET_MAX_ENCODER	1200
 
 #define ARM_TURRET_CORRECTION_P 0.001f   // motor power per tick to correct invalid turret configurations

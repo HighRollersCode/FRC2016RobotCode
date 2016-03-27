@@ -184,12 +184,14 @@ void RobotDemo::UpdateInputs()
 {
 	commandLeft = leftStick->GetY();
 	commandRight = rightStick->GetY();
-	commandArmShooter = turretStick->GetZ();
 	commandLift = turretStick->GetY()*.85f;
 	commandTurret = turretStick->GetX()*.5f;
-	commandArmShooter = 0;
 	prevIntakeArm = curIntakeArm;
 	curIntakeArm = rightStick->GetTrigger();
+
+	//commandArmShooter = turretStick->GetZ();
+	commandArmShooter = 0;
+
 
 	if(CollManager->currentMode == CollisionManager::RobotMode::Intake)
 	{
@@ -248,7 +250,15 @@ void RobotDemo::UpdateInputs()
 	}
 	if(turretStick->GetRawButton(6))
 	{
-		commandArmShooter = -1.0f;
+		// when the arm is raised to a batter shot, if we are not ignoring encoders, use low speed
+		if ((Arm->BypassEncoderLimits == false) && (fabs(Arm->GetLifterEncoder()) < 2000))
+		{
+			commandArmShooter = Preset_Tower_Shot_Shooter_Wheels;
+		}
+		else
+		{
+			commandArmShooter = -1.0f;
+		}
 	}
 	else if(turretStick->GetRawButton(7))
 	{
@@ -273,6 +283,7 @@ void RobotDemo::Send_Smartdashboard_Data(void)
 		DriveTrain->SendData();
 		Intake->SendData();
 		Arm->SendData();
+		CollManager->SendData();
 
 		SmartDashboard::PutBoolean("Jetson Connection", TargClient->Get_Connected());
 		SmartDashboard::PutData("Shutdown Jetson",new ShutdownJetsonCommand());

@@ -251,6 +251,19 @@ public:
 	}
 };
 
+class FullShotQuickCommand : public HrScriptCommandClass
+{
+public:
+	virtual const char * Get_Command_Name() { return "FullShotQuick"; }
+	virtual int Get_Parameter_Count() { return 0; }
+	virtual HrScriptCommandClass * Create_Command() { return new FullShotQuickCommand(); }
+	virtual void Execute()
+	{
+		RobotDemo::Get()->Arm->FullShotQuick();
+	}
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 										//Intake Code//
@@ -394,6 +407,7 @@ void RobotDemo::Init_Script_System()
 
 	m_ScriptSystem->Add_Command(new SetArmCommand());
 	m_ScriptSystem->Add_Command(new FullShotCommand());
+	m_ScriptSystem->Add_Command(new FullShotQuickCommand());
 	m_ScriptSystem->Add_Command(new TrackingCommand());
 	m_ScriptSystem->Add_Command(new ArmEnablePIDCommand());
 	m_ScriptSystem->Add_Command(new TurretEnablePIDCommand());

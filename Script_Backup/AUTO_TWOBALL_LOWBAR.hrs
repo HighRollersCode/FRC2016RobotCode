@@ -1,3 +1,28 @@
+// DriveTrainSettings <turningp value> <mult value>
+// Wait <seconds>
+// BrakeWait <seconds> <brake>
+// WaitForTarget <seconds>
+// DisableBrake <seconds> <brake>
+// DriveTimed <fwd_speed> <turn_speed> <seconds>
+// Drive <fwd_speed> <turn_speed>
+// DriveTicksHeading <fwd_speed> <how many ticks> <desired heading>
+// DriveTurnTicks <Forward> <turn> <ticks>
+// GyroTurn <heading>
+// GryoTurnTimed <Heading> <seconds>
+// Tracking <enable>
+// Arm <TurretTarg> <ArmTarg> -1 means no change
+// FullShot 
+// IntakeLift <Location of Lift>
+// Intake <1 = on, 0 = off, -1 = reverse>
+// EnterIntakeMode <EnterState: mode name>
+// ArmEnablePID <enable = 1, disable =0>
+// TurretEnablePID <enable = 1, disable =0>
+// IntakeEnablePID <enable = 1, disable =0>
+// SetAuto <thisRobot>
+
+
+
+
 //Distance from auto line is -260
 //Passing lowbar is -415
 //Driving to spot is -360 and -370
@@ -6,63 +31,89 @@
 //arm (back shot) = 2925
 //turret (back shot) = 760
 //Drive through the LowBar to shooting spot
-IntakeEnablePID 0
-ArmEnablePID 0
-TurretEnablePID 0
-DriveTicksHeading -0.5 -50 0.0
+
+// Lower the intake to drop the first ball
 IntakeEnablePID 1
-ArmEnablePID 1
-TurretEnablePID 1
-EnterIntakeMode
-Wait 2
-Arm -1 -5110
-Wait .5
-EnableArmPID 0
-EnableTurretPID 0
-DriveTicksHeading -0.5 -575 0.0
+IntakeLift -385
+Wait 0.5
 
-//Setting up Arm to shoot then track and fire
+// Lower the arm into intake position
 ArmEnablePID 1
-TurretEnablePID 1
-Arm -1 0
-DriveTicksHeading -0.5 -200 0.0
-Arm 760 -1
+Arm -1 -5750
 Wait 1.0
-Arm -1 2800
 
-Wait 3.0
+// Turn on intake motor, arm intake wheels and lower the intake to pick up the ball
+Intake 1
+IntakeLift -450
+Wait 1.0
+
+// Raise arm to go through low bar
+Arm -1 -5300
+Intake 0
+
+// Drive back and line up with the low bar
+DriveTicksHeading -0.5 -50 0.0
+BrakeWait 0.01 10
+Wait 0.1
+
+GyroTurn -30.0
+Wait 0.1
+DriveTicksHeading -0.4 -110 -30.0
+BrakeWait 0.01 10
+Wait 0.1
+GyroTurnTimed 0 1
+Wait 0.1
+
+//Drive through low bar
+DriveTicksHeading -0.6 -500 0.0
+BrakeWait 0.01 10
+
+//Lift the arm to back shot
+TurretEnablePID 1
+
+Arm -1 2643
+Wait 0.5
+Arm 626 2643
+Wait 0.5
+
+//Track and Shoot
 Tracking 1
-WaitForTarget 2.5
+WaitForTarget 10
 Tracking 0
-FullShot
-Wait 1.0
 
-//Go back through the Low Bar and Intake another ball
-Arm -1 0
-Wait 1.0
+FullShot
+Wait 3.0
+
+//Enter intake mode and go pick up second ball
 EnterIntakeMode
 Wait 2.0
-DriveTicksHeading 0.5 700 0.0
-Wait 1.5
-DriveTicksHeading 0.4 70 -30.0
+
+DriveTicksHeading 0.6 520 0.0
 Intake 1
-DriveTicksHeading 0.4 100 15
-BrakeWait .01 -1
-DriveTicksHeading -.4 -100 -30
-DriveTicksHeading -.4 -700 0.1
+DriveTicksHeading 0.3 280 0.0
+BrakeWait 0.01 -10
+Intake 0
+
+//Drive through the lowbar
+DriveTicksHeading -0.7 -800 0.0
+BrakeWait 0.01 10
+
+//Move arm to back shot
 ArmEnablePID 1
 TurretEnablePID 1
-Arm -1 0
-DriveTicksHeading -0.5 -200 0.0
-Arm 760 -1
-Wait 1.0
-Arm -1 2800
+Arm -1 2643
+Wait 0.5
+Arm 626 2643
+Wait 0.5
 
-Wait 3.0
+//Track and Shoot
 Tracking 1
-WaitForTarget 2.5
+WaitForTarget 10
 Tracking 0
-FullShot
-Wait 1.0
-///END///
 
+FullShot
+Wait 3.0
+
+ArmEnablePID 0
+TurretEnablePID 0
+IntakeEnablePID 0

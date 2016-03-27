@@ -1,5 +1,16 @@
-SetAuto 4
-DriveTrainSettings .007
+//SetAuto 1 is AUTO_ONEBALL_LOWBAR
+//SetAuto 11 is AUTO_ONEBALL_LOWBAR_BACK
+//SetAuto 2 is AUTO_TWOBALL_LOWBAR
+//SetAuto 3 is AUTO_TWOBALL_SPYBOT
+//SetAuto 4 is AUTO_ONEBALL_DEFENSE_LEFT
+//SetAuto 41 is AUTO_ONEBALL_DEFENSE_RIGHT
+//SetAuto 42 is AUTO_ONEBALL_DEFENSE_CENTER
+//SetAuto 5 is AUTO_TEST_ONEBALL_SHOT
+//SetAuto 6 is AUTO_ONEBALL_SHOWOFF
+//SetAuto 999 is EMPTY
+
+SetAuto 2
+DriveTrainSettings .05
 //.013
 EBrakeSettings .5
 

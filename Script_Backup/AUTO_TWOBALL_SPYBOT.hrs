@@ -1,16 +1,47 @@
+
+// Start in spybot position
+
+// Lift the arm and intake and drive forward to a better angle
 ArmEnablePID 1
 TurretEnablePID 1
 IntakeEnablePID 1
+
 IntakeLift -455
-Arm -1280 -2712
-Wait 2.0
-Targeting 1
-WaitForTarget 2.5
-Targeting 0
-FullShot
-Wait 3.0
-EnterIntakeMode
 Wait 1.0
-DriveTicksHeading 0.4 200 -10.0
+
+Arm -1550 -2500
+DriveTicksHeading 0.5 250 0.0
+Wait 0.5
+
+Tracking 1
+WaitForTarget 200
+Tracking 0
+
+ArmEnablePID 0
+TurretEnablePID 0
+
+FullShot
+Wait 1.0
+
+ArmEnablePID 1
+TurretEnablePID 1
+EnterIntakeMode
+Wait 30.0
+
+// drive at a 5 deg angle to move off of the wall
+DriveTicksHeading 0.7 200 0.0
+
+// drive at 0 deg angle to edge of the bump
+DriveTicksHeading 0.4 250 0.0
+
+// stop precisely at the end of this move
+BrakeWait 0.5 0
+
+// drive over the bump
+//DriveTicksHeading 0.4 400 0
+
+Wait 30.0
+
+
 DriveTicksHeading 0.4 700 0
 Wait 20

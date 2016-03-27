@@ -49,6 +49,7 @@ public:
 
 	void EnterState(RobotMode mode);
 	void Update(bool ShootingState, bool IntakeState, bool DefensiveState, bool TowerShotState);//, bool EndGameState);
+	void SendData();
 };
 
 #endif /* SRC_COLLISIONMANAGER_H_ */

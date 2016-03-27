@@ -7,7 +7,7 @@ Arm -1 -795
 
 // Drive over the defense
 DriveTicksHeading 0.9 900 0.0
-DriveTicksHeading 0.3 500 0.0
+DriveTicksHeading 0.3 200 0.0
 
 // Stop driving, lower intake
 BrakeWait .01 -1
@@ -15,9 +15,7 @@ IntakeLift -455
 Wait 2
 
 // Aim at goal
-Arm -1 -3100
-Wait 1
-Arm 700 -1
+Arm -1 -1000
 Wait 1
 
 Tracking 1
