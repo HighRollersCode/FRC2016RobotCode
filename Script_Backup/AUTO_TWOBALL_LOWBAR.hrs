@@ -73,7 +73,7 @@ TurretEnablePID 1
 
 Arm -1 2643
 Wait 0.5
-Arm 626 2643
+Arm 1565 2643
 Wait 0.5
 
 //Track and Shoot
@@ -103,7 +103,7 @@ ArmEnablePID 1
 TurretEnablePID 1
 Arm -1 2643
 Wait 0.5
-Arm 626 2643
+Arm 1565 2643
 Wait 0.5
 
 //Track and Shoot

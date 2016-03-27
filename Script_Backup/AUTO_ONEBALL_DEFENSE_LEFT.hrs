@@ -17,7 +17,7 @@ Wait 2
 // Aim at goal
 Arm -1 -3100
 Wait 1
-Arm 700 -1
+Arm 1750 -1
 Wait 1
 
 Tracking 1
