@@ -573,8 +573,8 @@ void ArmClass::ShooterOff()
 }
 void ArmClass::ShooterOutake()
 {
-	ArmShooter->Set(.5f);
-	ArmShooter2->Set(-.5f);
+	ArmShooter->Set(1.0f);
+	ArmShooter2->Set(-1.0f);
 }
 float ArmClass::Clamp_Target(float tar, float lowerlim, float upperlim)
 {

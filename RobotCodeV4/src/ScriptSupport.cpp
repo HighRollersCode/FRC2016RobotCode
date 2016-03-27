@@ -262,6 +262,24 @@ public:
 		RobotDemo::Get()->Arm->FullShotQuick();
 	}
 };
+class ShooterWheelsCommand : public HrScriptCommandClass
+{
+public:
+	virtual const char * Get_Command_Name() { return "Shooter"; }
+	virtual int Get_Parameter_Count() { return 1; }
+	virtual HrScriptCommandClass * Create_Command() { return new ShooterWheelsCommand(); }
+	virtual void Execute()
+	{
+		if((int)m_Parameters[0] == 1)
+		{
+			RobotDemo::Get()->Arm->ShooterOutake();
+		}
+		else
+		{
+			RobotDemo::Get()->Arm->ShooterOff();
+		}
+	}
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -408,6 +426,7 @@ void RobotDemo::Init_Script_System()
 	m_ScriptSystem->Add_Command(new SetArmCommand());
 	m_ScriptSystem->Add_Command(new FullShotCommand());
 	m_ScriptSystem->Add_Command(new FullShotQuickCommand());
+	m_ScriptSystem->Add_Command(new ShooterWheelsCommand());
 	m_ScriptSystem->Add_Command(new TrackingCommand());
 	m_ScriptSystem->Add_Command(new ArmEnablePIDCommand());
 	m_ScriptSystem->Add_Command(new TurretEnablePIDCommand());

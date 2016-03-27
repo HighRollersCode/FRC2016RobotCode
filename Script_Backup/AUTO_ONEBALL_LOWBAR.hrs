@@ -7,20 +7,7 @@
 //turret (back shot) = 760
 //new spot:
 
-ArmEnablePID 1
-Arm -1 -5200
-DriveTicksHeading -0.6 -825 0.0
-BrakeWait 0.01 10
 
-//Spin around 150 degrees ready to collect another ball in teleop
-GyroTurn 150
-Wait 2.0
-
-ArmEnablePID 0
-TurretEnablePID 0
-IntakeEnablePID 0
-
-Wait 100
 //Drive through the LowBar to shooting spot
 IntakeEnablePID 1
 ArmEnablePID 1

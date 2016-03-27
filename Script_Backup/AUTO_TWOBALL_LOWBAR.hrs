@@ -11,7 +11,9 @@
 // GryoTurnTimed <Heading> <seconds>
 // Tracking <enable>
 // Arm <TurretTarg> <ArmTarg> -1 means no change
-// FullShot 
+// FullShot
+// FullShotQuick
+// Shooter <1 = on> 
 // IntakeLift <Location of Lift>
 // Intake <1 = on, 0 = off, -1 = reverse>
 // EnterIntakeMode <EnterState: mode name>
@@ -52,67 +54,66 @@ Arm -1 -5300
 Intake 0
 
 // Drive back and line up with the low bar
-DriveTicksHeading -0.5 -50 0.0
-BrakeWait 0.01 10
-Wait 0.1
-
-GyroTurn -30.0
-Wait 0.1
-DriveTicksHeading -0.4 -110 -30.0
-BrakeWait 0.01 10
-Wait 0.1
-GyroTurnTimed 0 1
-Wait 0.1
-
+DriveTicksHeading -0.7 -50 0.0
+DriveTicksHeading -0.7 -150 -45.0
 //Drive through low bar
-DriveTicksHeading -0.6 -500 0.0
-BrakeWait 0.01 10
+DriveTicksHeading -0.8 -400 0.0
 
-//Lift the arm to back shot
 TurretEnablePID 1
-
 Arm -1 2643
-Wait 0.5
+DriveTicksHeading -0.6 -100 0.0
+
 Arm 1565 2643
-Wait 0.5
+
+Shooter 1
+DriveTicksHeading -0.6 -100 0.0
+BrakeWait 0.01 10
+Wait 1.5
+//Lift the arm to back shot
 
 //Track and Shoot
 Tracking 1
 WaitForTarget 10
 Tracking 0
 
-FullShot
-Wait 3.0
+FullShotQuick
+Wait 1.0
+
+Shooter 0
 
 //Enter intake mode and go pick up second ball
 EnterIntakeMode
-Wait 2.0
+Wait 1.5
 
 DriveTicksHeading 0.6 520 0.0
 Intake 1
 DriveTicksHeading 0.3 280 0.0
 BrakeWait 0.01 -10
-Intake 0
+
 
 //Drive through the lowbar
-DriveTicksHeading -0.7 -800 0.0
-BrakeWait 0.01 10
-
-//Move arm to back shot
+DriveTicksHeading -0.6 -400 0.0
+Intake 0
 ArmEnablePID 1
 TurretEnablePID 1
 Arm -1 2643
-Wait 0.5
-Arm 1565 2643
-Wait 0.5
+DriveTicksHeading -0.6 -150 0.0
 
+Arm 1565 2643
+
+Shooter 1
+DriveTicksHeading -0.6 -50 0.0
+BrakeWait 0.01 10
+Wait 1.5
 //Track and Shoot
 Tracking 1
 WaitForTarget 10
 Tracking 0
 
-FullShot
-Wait 3.0
+FullShotQuick
+Wait 1.0
+
+Shooter 0
 
 ArmEnablePID 0
 TurretEnablePID 0
