@@ -89,8 +89,13 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 			case 0 :
 				//Reset Intske
 				IntakeRef->LiftPIDController->Enable();
-
 				IntakeRef->GotoIntake();
+				if (ArmRef->GetLifterEncoder() > 0)
+				{
+					ArmRef->ArmPIDController->Enable();
+					ArmRef->SetArm(0);
+				}
+
 				state = 1;
 				counter = 0;
 				break;
@@ -115,7 +120,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				}
 				break;
 			case 2 :
-				if(fabs(ArmRef->GetTurretEncoder()) <= 12)
+				if(fabs(ArmRef->GetTurretEncoder()) <= 15 * 60.0f/24.0f)
 				{
 					counter++;
 				}
@@ -123,7 +128,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				{
 					counter= 0;
 				}
-				if(counter > 5)
+				if(counter > 1)
 				{
 					ArmRef->ArmPIDController->Enable();
 					ArmRef->ResetArm();
@@ -168,7 +173,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 					}
 					break;
 				case 2 :
-					if(fabs(ArmRef->GetTurretEncoder()) <= 5)
+					if(fabs(ArmRef->GetTurretEncoder()) <= 5*60.0f/24.0f)
 					{
 						state = 3;
 						ArmRef->GotoShooting();
@@ -260,7 +265,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 					break;
 				case 2 :
 					//wait for turret to reach zero
-					if(fabs(ArmRef->GetTurretEncoder()) <= 20)
+					if(fabs(ArmRef->GetTurretEncoder()) <= 20*60.0f/24.0f)
 					{
 						// move arm to tower shot height
 						state = 3;

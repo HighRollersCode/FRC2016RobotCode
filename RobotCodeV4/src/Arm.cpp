@@ -17,12 +17,12 @@ const float ARM_LIFT_P = -.0005f;
 const float ARM_LIFT_I = -0.000005f;//1f;
 const float ARM_LIFT_D = 0;//.0001f;
 
-//const float MIN_TURRET_CMD = 0.12f;
-const float MIN_TURRET_CMD = 0.09f;
+//const float MIN_TURRET_CMD = 0.09f;
+const float MIN_TURRET_CMD = 0.12f;
 //const float ARM_TURRET_P = -.001125f;
 //const float ARM_TURRET_I = -.000025f;
-const float ARM_TURRET_P = -.001125f;
-const float ARM_TURRET_I = -.00001f;
+const float ARM_TURRET_P = -.00075f;
+const float ARM_TURRET_I = -.00002f;
 const float ARM_TURRET_D = 0.0f;
 
 const float ARM_TURRET_TOLERANCE = 1;
@@ -198,7 +198,7 @@ ArmClass::ArmClass()
 	//TurretPIDController->SetAbsoluteTolerance(1);
 	TurretPIDController->SetInputRange(ARM_TURRET_MIN_ENCODER,ARM_TURRET_MAX_ENCODER);
 	TurretPIDController->SetOutputRange(-1.0f,1.0f);
-	TunerPIDController = new PIDController(0,0,0,TurretEncoder,ArmTurret,.01f);
+	TunerPIDController = new PIDController(ARM_TURRET_P * 1000,ARM_TURRET_I * 1000,ARM_TURRET_D * 1000,TurretEncoder,ArmTurret,.01f);
 	TunerPIDController->SetContinuous(false);
 	TunerPIDController->Disable();
 	TunerPIDController->SetAbsoluteTolerance(ARM_TURRET_TOLERANCE);
@@ -271,7 +271,10 @@ void ArmClass::UpdateLift(float ArmLift)
 
 	if(fabs(ArmLifterCommand_Cur) > .1f)
 	{
-		ArmPIDController->Disable();
+		if(ArmPIDController->IsEnabled())
+		{
+			ArmPIDController->Disable();
+		}
 		if(GetLifterEncoder() >= 5000)
 		{
 			if((ArmLifterCommand_Cur) < -.2f)
@@ -299,13 +302,15 @@ void ArmClass::UpdateTurret(float Turret)
 
 	TurretEncoder_Cur = GetTurretEncoder();
 
-	if(fabs(TurretPIDController->GetError()) < 200)
+	if(fabs(TurretPIDController->GetError()) < 300.0f)
 	{
-		TurretPIDController->SetPID(ARM_TURRET_P,ARM_TURRET_I,ARM_TURRET_D);//TurretPIDController->GetD());
+		//TurretPIDController->SetPID(ARM_TURRET_P,ARM_TURRET_I,ARM_TURRET_D);//TurretPIDController->GetD());
+		TurretPIDController->SetPID(TunerPIDController->GetP() / 1000.0f,TunerPIDController->GetI() / 1000.0f,TunerPIDController->GetD() / 1000.0f);
 	}
 	else
 	{
-		TurretPIDController->SetPID(ARM_TURRET_P,0.0f,ARM_TURRET_D);//TurretPIDController->GetD());
+		TurretPIDController->SetPID(TunerPIDController->GetP() / 1000.0f,0.0f,TunerPIDController->GetD() / 1000.0f);
+		//TurretPIDController->SetPID(ARM_TURRET_P,0.0f,ARM_TURRET_D);//TurretPIDController->GetD());
 	}
 	if((fabs(TurretCommand_Prev) > .1f) && (fabs(TurretCommand_Cur) < .1f))
 	{
@@ -314,8 +319,10 @@ void ArmClass::UpdateTurret(float Turret)
 	}
 	if(fabs(TurretCommand_Cur) > .2f)
 	{
-		TurretPIDController->Disable();
-
+		if(TurretPIDController->IsEnabled())
+		{
+			TurretPIDController->Disable();
+		}
 		turretOut = TurretCommand_Cur;
 		ArmTurret->Set(turretOut);
 	}
@@ -642,17 +649,14 @@ void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 		float xFOV = 76.00f;
 		float yFOV = 61.2f;
 
-		float ticksPerDegreeX = 1280/90.0f;
-		float ticksPerDegreeY = 5000/90.0f;
-
 		moveByX_Degrees = (calX - centerX) * (xFOV*.5f);
 		moveByY_Degrees = (calY - centerY) * (yFOV*.5f);
 
 		LastMoveByDegreesX = moveByX_Degrees;
 		LastMoveByDegreesY = moveByY_Degrees;
 
-		moveByX_Ticks = moveByX_Degrees * ticksPerDegreeX;
-		moveByY_Ticks = moveByY_Degrees * ticksPerDegreeY;
+		moveByX_Ticks = moveByX_Degrees / ARM_TURRET_DEGREES_PER_TICK;
+		moveByY_Ticks = moveByY_Degrees / ARM_LIFT_DEGREES_PER_TICK;
 
 		if(GetLifterEncoder() >= 0)
 		{
@@ -740,7 +744,7 @@ float ArmClass::FSign(float a)
 }
 bool ArmClass::TurretRoughlyCentered()
 {
-	if(abs(GetTurretEncoder()) <= 50)
+	if(abs(GetTurretEncoder()) <= 50*60/24)
 	{
 		return true;
 	}
@@ -785,18 +789,18 @@ float ArmClass::Validate_Turret_Command(float cmd, bool ispidcmd)
 	if(ispidcmd)
 	{
 		//randon .002 commands...
-		if(cmd > 0.003f)
+		if(cmd > 0.0f)
 		{
 			cmd = fmaxf(cmd, MIN_TURRET_CMD);
 		}
-		else if (cmd < -.003f)
+		else if (cmd < 0.0f)
 		{
 			cmd = fminf(cmd, -MIN_TURRET_CMD);
 		}
-		else if (cmd < .003f && cmd > -.003f)
-		{
-			cmd = 0.0f;
-		}
+		//else if (cmd < .003f && cmd > -.003f)
+		//{
+		//	cmd = 0.0f;
+		//}
 
 	}
 	return cmd;
@@ -900,18 +904,18 @@ float ArmClass::Validate_Lift_Command(float cmd, bool ispidcmd)
 	if(ispidcmd)
 	{
 		//randon .002 commands...
-		if(cmd > 0.003f)
+		if(cmd > 0.0f)
 		{
 			cmd = fmaxf(cmd, MIN_ARM_LIFT_CMD);
 		}
-		else if (cmd < -.003f)
+		else if (cmd < -0.0f)
 		{
 			cmd = fminf(cmd, -MIN_ARM_LIFT_CMD);
 		}
-		else if (cmd < .003f && cmd > -.003f)
-		{
-			cmd = 0.0f;
-		}
+		//else if (cmd < .003f && cmd > -.003f)
+		//{
+		//	cmd = 0.0f;
+		//}
 	}
 
 	return cmd;

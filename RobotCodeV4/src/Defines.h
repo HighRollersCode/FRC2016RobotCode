@@ -78,9 +78,9 @@
 //
 
 // The turret is zero'd when it is centered pointing forward.
-#define ARM_TURRET_DEGREES_PER_TICK (90.0f / 1210.0f)
-#define ARM_TURRET_MIN_ENCODER	-1650    // we need a shot to the left in the spybot two-ball at -1500
-#define ARM_TURRET_MAX_ENCODER	1200
+#define ARM_TURRET_DEGREES_PER_TICK (90.0f / (1210.0f * 60.0f/24.0f))
+#define ARM_TURRET_MIN_ENCODER	-1650 * (60.0f/24.0f)   // we need a shot to the left in the spybot two-ball at -1500
+#define ARM_TURRET_MAX_ENCODER	1200 * (60.0f/24.0f)
 
 #define ARM_TURRET_CORRECTION_P 0.001f   // motor power per tick to correct invalid turret configurations
 #define ARM_LIFT_CORRECTION_P 0.05f	    // motor power per degree to correct invalid lift configurations

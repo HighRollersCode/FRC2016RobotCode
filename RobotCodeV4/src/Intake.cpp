@@ -87,7 +87,10 @@ void IntakeClass::Update(float intake, float intakelift)
 	if(fabs(LifterCommand_Cur) > 0.1f)
 	{
 		LiftEncoder_Targ = -1.0f;
-		LiftPIDController->Disable();
+		if(LiftPIDController->IsEnabled())
+		{
+			LiftPIDController->Disable();
+		}
 		IntakeLift->Set(-LifterCommand_Cur);
 	}
 }
