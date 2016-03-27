@@ -251,7 +251,7 @@ void RobotDemo::UpdateInputs()
 	if(turretStick->GetRawButton(6))
 	{
 		// when the arm is raised to a batter shot, if we are not ignoring encoders, use low speed
-		if ((Arm->BypassEncoderLimits == false) && (fabs(Arm->GetLifterEncoder()) < 2000))
+		if ((Arm->BypassEncoderLimits == false) && (fabs(Arm->GetLifterEncoder()) < 1300))
 		{
 			commandArmShooter = Preset_Tower_Shot_Shooter_Wheels;
 		}
