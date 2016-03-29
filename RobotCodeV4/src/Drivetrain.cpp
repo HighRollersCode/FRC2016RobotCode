@@ -133,9 +133,9 @@ void Drivetrain::UpdateEBrake(int enable,int targ)
 		float Rightout = -Rerror*Ebrakemult;
 
 		LeftDrive->Set(-Leftout);
-	//	LeftDrive1->Set(Leftout);
+		LeftDrive2->Set(Leftout);
 		RightDrive->Set(Rightout);
-	//	RightDrive1->Set(-Rightout);
+		RightDrive2->Set(-Rightout);
 	}
 	if((CurrentBrakeBTN == 0) && (PrevBrakeBTN == 1))
 	{
