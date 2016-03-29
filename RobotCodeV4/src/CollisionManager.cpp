@@ -103,8 +103,6 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				//Reset Turret and wait Intake
 				//REENABLE
 				//ENABLE THIS WHEN THE INTAKE IS FUNCTIONAL
-				counter = 3;
-				/*
 				if(fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 20)
 				{
 					counter++;
@@ -113,7 +111,6 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				{
 					counter = 0;
 				}
-				*/
 				if (counter > 2)
 				{
 					ArmRef->SetTurret(0);

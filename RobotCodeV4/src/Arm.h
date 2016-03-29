@@ -62,6 +62,9 @@ public:
 	float TurretCommand_Cur;
 	float kpTurret;
 
+	float Min;
+	float Angle;
+
 	Timer *ArmTimer;
 
 	Timer *ArmLockonTimer;

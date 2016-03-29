@@ -47,6 +47,7 @@ public:
 	//void GoToInEndGame();
 	void ResetEncoderLift();
 	void ResetEncoderLiftDown();
+	void SetIntakeStartPosition(int value);
 
 	int GetLiftEncoder();
 	void SetLift(int targ);

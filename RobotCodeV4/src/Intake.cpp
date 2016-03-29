@@ -128,6 +128,7 @@ void IntakeClass::SetLift(int targ)
 	LiftEncoder_Targ = targ;
 	LiftPIDController->SetSetpoint((float)targ);
 }
+
 int IntakeClass::GetLiftEncoder()
 {
 	return LiftEncoder->Get();
@@ -144,6 +145,11 @@ void IntakeClass::ResetEncoderLiftDown()
 	SetLift(Preset_Intake_Down);
 }
 
+void IntakeClass::SetIntakeStartPosition(int value)
+{
+	LiftEncoder->Reset_To_Value(value);
+}
+
 void IntakeClass::SendData()
 {
 	SmartDashboard::PutNumber("BeaterBarEncoder",LiftEncoder->Get());
@@ -155,7 +161,7 @@ float IntakeClass::Validate_Lift_Command(float cmd)
 #if 01
 	int lift = GetLiftEncoder();
 	//when cmd is positive the intake bar moves up
-	if (cmd < 0.0)   // if cmd is moving turret toward lower angle...
+	if (cmd < 0.0)   // if cmd is moving intake toward lower angle...
 	{
 		//LimitSwitch->Get is false when it sees metal
 		bool limit_switch_triggered = (LimitSwitch->Get() == false);

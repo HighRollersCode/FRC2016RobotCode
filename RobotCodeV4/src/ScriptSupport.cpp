@@ -288,6 +288,17 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+class SetIntakeStartPositionCommand : public HrScriptCommandClass
+{
+public:
+	virtual const char * Get_Command_Name() { return "IntakeStartPosition"; }
+	virtual int Get_Parameter_Count() { return 1; }
+	virtual HrScriptCommandClass * Create_Command() { return new SetIntakeStartPositionCommand(); }
+	virtual void Execute()
+	{
+		RobotDemo::Get()->Intake->SetIntakeStartPosition((int)m_Parameters[0]);
+	}
+};
 
 class SetIntakeLiftCommand : public HrScriptCommandClass
 {
@@ -432,7 +443,7 @@ void RobotDemo::Init_Script_System()
 	m_ScriptSystem->Add_Command(new TurretEnablePIDCommand());
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-
+	m_ScriptSystem->Add_Command(new SetIntakeStartPositionCommand());
 	m_ScriptSystem->Add_Command(new SetIntakeLiftCommand());
 	m_ScriptSystem->Add_Command(new SetIntakeCommand());
 	m_ScriptSystem->Add_Command(new EnterIntakeModeCommand());

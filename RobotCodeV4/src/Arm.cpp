@@ -17,12 +17,13 @@ const float ARM_LIFT_P = -.0005f;
 const float ARM_LIFT_I = -0.000005f;//1f;
 const float ARM_LIFT_D = 0;//.0001f;
 
-//const float MIN_TURRET_CMD = 0.09f;
-const float MIN_TURRET_CMD = 0.12f;
+//const float MIN_TURRET_CMD = 0.12f;
+const float MIN_TURRET_CMD_HIGH_ANGLE = 0.17f;
+const float MIN_TURRET_CMD_LOW_ANGLE = 0.22f;
 //const float ARM_TURRET_P = -.001125f;
 //const float ARM_TURRET_I = -.000025f;
-const float ARM_TURRET_P = -.00075f;
-const float ARM_TURRET_I = -.00002f;
+const float ARM_TURRET_P = -.001f;
+const float ARM_TURRET_I = -.0000025f;
 const float ARM_TURRET_D = 0.0f;
 
 const float ARM_TURRET_TOLERANCE = 1;
@@ -157,6 +158,9 @@ ArmClass::ArmClass()
 	TurretCommand_Cur = 0.0f;
 	TurretCommand_Prev = 0.0f;
 	kpTurret = .00095f;
+
+	Min = 0;
+	Angle = 0;
 
 	ArmTimer = new Timer();
 	ArmTimer->Reset();
@@ -549,7 +553,7 @@ void ArmClass::FullShotUpdate()
 			ShotStage = 3;
 			break;
 		case 3:
-			if(ShotTimer->Get() > .9f)
+			if(ShotTimer->Get() > .3f)
 			{
 				ShotExtend->Set(false);
 				ShotRetract->Set(true);
@@ -715,6 +719,8 @@ void ArmClass::SendData()
 	SmartDashboard::PutNumber("LastMoveByDegreesX", LastMoveByDegreesX);
 	SmartDashboard::PutNumber("LastMoveByDegreesY", LastMoveByDegreesY);
 	SmartDashboard::PutNumber("ArmLockonTimer", ArmLockonTimer->Get());
+	SmartDashboard::PutNumber("Min", Min);
+	SmartDashboard::PutNumber("Angle", Angle);
 
 	SmartDashboard::PutBoolean("CurrentEnableTracking",CurrentEnableTracking);
 	SmartDashboard::PutBoolean("LiftPIDEnabled", ArmPIDController->IsEnabled());
@@ -744,7 +750,7 @@ float ArmClass::FSign(float a)
 }
 bool ArmClass::TurretRoughlyCentered()
 {
-	if(abs(GetTurretEncoder()) <= 50*60/24)
+	if(abs(GetTurretEncoder()) <= 50) //*60/24)
 	{
 		return true;
 	}
@@ -788,14 +794,39 @@ float ArmClass::Validate_Turret_Command(float cmd, bool ispidcmd)
 
 	if(ispidcmd)
 	{
+		float min = 0;
+		float dif = MIN_TURRET_CMD_LOW_ANGLE-MIN_TURRET_CMD_HIGH_ANGLE;
+		float arm_angle = Lift_Encoder_To_Degrees(LifterEncoder->Get());
+		if(arm_angle < 20)
+		{
+			arm_angle = 20;
+		}
+		if(arm_angle > 160)
+		{
+			arm_angle = 160;
+		}
+		if(arm_angle < 90.0f)
+		{
+			float norm = arm_angle / 70.0f;
+			norm *= -1;
+			norm += 1;
+			min = (norm * dif) + MIN_TURRET_CMD_HIGH_ANGLE;
+		}
+		else
+		{
+			float norm = (arm_angle - 90.0f) / 70.0f;
+			min = (norm * dif) + MIN_TURRET_CMD_HIGH_ANGLE;
+		}
+		Min = min;
+		Angle = arm_angle;
 		//randon .002 commands...
 		if(cmd > 0.0f)
 		{
-			cmd = fmaxf(cmd, MIN_TURRET_CMD);
+			cmd = fmaxf(cmd, min);
 		}
 		else if (cmd < 0.0f)
 		{
-			cmd = fminf(cmd, -MIN_TURRET_CMD);
+			cmd = fminf(cmd, -min);
 		}
 		//else if (cmd < .003f && cmd > -.003f)
 		//{
