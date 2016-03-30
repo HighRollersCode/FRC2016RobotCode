@@ -37,14 +37,6 @@ void IntakeLiftVictorClass::PIDWrite(float value)
 	value = m_Intake->Validate_Lift_Command(value);
 	Victor::Set(value);
 }
-
-
-
-
-
-
-
-
 IntakeClass::IntakeClass()
 {
 	Intake = new Victor(Tal_Intake_Roller);//Intake_PWM
@@ -61,7 +53,7 @@ IntakeClass::IntakeClass()
 
 	//	.00075f
 	LiftEncoder->Reset();
-	LiftPIDController= new PIDController(.011f,0.0f,0.0f,LiftEncoder,IntakeLift,.05f);
+	LiftPIDController= new PIDController(.006f,0.0f,0.0f,LiftEncoder,IntakeLift,.05f);
 	LiftPIDController->SetContinuous(false);
 	LiftPIDController->Disable();
 	LiftPIDController->SetAbsoluteTolerance(1);

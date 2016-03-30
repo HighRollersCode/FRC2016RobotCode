@@ -117,6 +117,17 @@ void Auton::AutonWaitForTarget(float Seconds)
 		keep_waiting = (AutonTimer->Get() < targ) && (lock_time < MIN_LOCK_TIME);
 	}
 }
+void Auton::AutonWaitForIntake()
+{
+	bool wait = true;
+	while(wait)
+	{
+		wait = (Collision->currentMode == CollisionManager::Intake);
+		wait &= (Collision->transitioning);
+		wait &= (Running());
+		Auto_System_Update();
+	}
+}
 void Auton::Auto_DriveTimer(float Fwd, float Turn, float seconds)
 {
 	DriveTrain->Drive_Auton(Fwd, Turn);

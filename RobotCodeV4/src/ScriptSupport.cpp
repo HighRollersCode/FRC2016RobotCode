@@ -79,6 +79,18 @@ public:
 	}
 };
 
+class WaitForIntakeModeCommand : public HrScriptCommandClass
+{
+public:
+	virtual const char * Get_Command_Name() { return "WaitForIntakeMode"; }
+	virtual int Get_Parameter_Count() { return 0; }
+	virtual HrScriptCommandClass * Create_Command() { return new WaitForIntakeModeCommand(); }
+	virtual void Execute()
+	{
+		RobotDemo::Get()->AutonomousControl->AutonWaitForIntake();
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 										//Driving Code//
@@ -189,6 +201,19 @@ public:
 		}
 	}
 };
+
+class SetArmStartPositionCommand : public HrScriptCommandClass
+{
+public:
+	virtual const char * Get_Command_Name() { return "ArmStartPosition"; }
+	virtual int Get_Parameter_Count() { return 1; }
+	virtual HrScriptCommandClass * Create_Command() { return new SetArmStartPositionCommand(); }
+	virtual void Execute()
+	{
+		RobotDemo::Get()->Arm->SetArmStartPosition((int)m_Parameters[0]);
+	}
+};
+
 class TurretEnablePIDCommand : public HrScriptCommandClass
 {
 public:
@@ -421,6 +446,7 @@ void RobotDemo::Init_Script_System()
 	m_ScriptSystem->Add_Command(new WaitCommand1());
 	m_ScriptSystem->Add_Command(new WaitForBrakeCommand());
 	m_ScriptSystem->Add_Command(new WaitForTargetCommand());
+	m_ScriptSystem->Add_Command(new WaitForIntakeModeCommand());
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -435,6 +461,7 @@ void RobotDemo::Init_Script_System()
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	m_ScriptSystem->Add_Command(new SetArmCommand());
+	m_ScriptSystem->Add_Command(new SetArmStartPositionCommand());
 	m_ScriptSystem->Add_Command(new FullShotCommand());
 	m_ScriptSystem->Add_Command(new FullShotQuickCommand());
 	m_ScriptSystem->Add_Command(new ShooterWheelsCommand());
@@ -468,6 +495,8 @@ void RobotDemo::Load_Scripts()
 	m_ScriptSystem->Set_Auto_Script(1,"AUTO_ONEBALL_LOWBAR.hrs");
 	m_ScriptSystem->Set_Auto_Script(11,"AUTO_ONEBALL_LOWBAR_BACK.hrs");
 	m_ScriptSystem->Set_Auto_Script(2,"AUTO_TWOBALL_LOWBAR.hrs");
+	m_ScriptSystem->Set_Auto_Script(21,"AUTO_TWOBALL_LOWBAR_SPIN.hrs");
+	m_ScriptSystem->Set_Auto_Script(22,"AUTO_TWOBALL_LOWBAR_SPIN_2.hrs");
 	m_ScriptSystem->Set_Auto_Script(3,"AUTO_TWOBALL_SPYBOT.hrs");
 	m_ScriptSystem->Set_Auto_Script(4,"AUTO_ONEBALL_DEFENSE_LEFT.hrs");
 	m_ScriptSystem->Set_Auto_Script(41,"AUTO_ONEBALL_DEFENSE_RIGHT.hrs");

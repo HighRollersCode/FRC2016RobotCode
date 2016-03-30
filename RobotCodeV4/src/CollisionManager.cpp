@@ -140,9 +140,10 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				{
 					ArmRef->ArmPIDController->Disable();
 					ArmRef->TurretPIDController->Disable();
-					IntakeRef->GotoIntake();
-					Wait(.25f);
-					ArmRef->GoToArm();
+
+					//IntakeRef->GotoIntake();
+					//Wait(.25f);
+					//ArmRef->GoToArm();
 					state = 4;
 					transitioning = false;
 				}

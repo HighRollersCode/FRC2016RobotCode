@@ -87,6 +87,7 @@ public:
 	void ResetArm();
 	void ResetTurret();
 	void ResetPostion();
+	void SetArmStartPosition(int value);
 	void FullShot();
 	void FullShotQuick();
 	void FullShotUpdate();

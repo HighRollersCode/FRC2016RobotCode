@@ -19,10 +19,10 @@ const float ARM_LIFT_D = 0;//.0001f;
 
 //const float MIN_TURRET_CMD = 0.12f;
 const float MIN_TURRET_CMD_HIGH_ANGLE = 0.17f;
-const float MIN_TURRET_CMD_LOW_ANGLE = 0.22f;
+const float MIN_TURRET_CMD_LOW_ANGLE = 0.2f;
 //const float ARM_TURRET_P = -.001125f;
 //const float ARM_TURRET_I = -.000025f;
-const float ARM_TURRET_P = -.001f;
+const float ARM_TURRET_P = -.0009f;
 const float ARM_TURRET_I = -.0000025f;
 const float ARM_TURRET_D = 0.0f;
 
@@ -114,7 +114,7 @@ ArmClass::ArmClass()
 	ArmLifter = new ArmLiftVictorClass(Tal_ArmLifter, this);
 	ArmTurret = new ArmTurretVictorClass(Tal_ArmTurret, this);
 
-	TurretEncoder = new Encoder(Encoder_Arm_Turret_1, Encoder_Arm_Turret_2, false,Encoder::EncodingType::k4X);
+	TurretEncoder = new Encoder(Encoder_Arm_Turret_1, Encoder_Arm_Turret_2, false,Encoder::EncodingType::k1X);
 	LifterEncoder = new ResettableEncoderClass(Encoder_Arm_Lift_1, Encoder_Arm_Lift_2, false,Encoder::EncodingType::k4X);
 
 	ShotExtend = new Solenoid(Sol_Shot_Extend);
@@ -201,7 +201,7 @@ ArmClass::ArmClass()
 	TurretPIDController->Disable();
 	//TurretPIDController->SetAbsoluteTolerance(1);
 	TurretPIDController->SetInputRange(ARM_TURRET_MIN_ENCODER,ARM_TURRET_MAX_ENCODER);
-	TurretPIDController->SetOutputRange(-1.0f,1.0f);
+	TurretPIDController->SetOutputRange(-.7f,.7f);
 	TunerPIDController = new PIDController(ARM_TURRET_P * 1000,ARM_TURRET_I * 1000,ARM_TURRET_D * 1000,TurretEncoder,ArmTurret,.01f);
 	TunerPIDController->SetContinuous(false);
 	TunerPIDController->Disable();
@@ -224,8 +224,8 @@ void ArmClass::Auto_Start()
 	ArmPIDController->Disable();
 	ArmPIDController->Reset();
 	TurretPIDController->Disable();
-
 	TurretPIDController->Reset();
+
 	SetTurret(GetTurretEncoder());
 	SetArm(GetLifterEncoder());
 
@@ -614,7 +614,10 @@ void ArmClass::ResetPostion()
 	Resetting = true;
 	ResetState = 0;
 }
-
+void ArmClass::SetArmStartPosition(int value)
+{
+	LifterEncoder->Reset_To_Value(value);
+}
 void ArmClass::SetArm(int targ)
 {
 	ArmPIDController->SetSetpoint(targ);

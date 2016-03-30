@@ -33,6 +33,7 @@ class Auton
 		void AutonWait(float Seconds);
 		void AutonWait2(float Seconds, int brake);
 		void AutonWaitForTarget(float Seconds);
+		void AutonWaitForIntake();
 		bool Auto_System_Update();
 
 		void Auto_DriveTimer(float Forward, float Turn, float seconds);

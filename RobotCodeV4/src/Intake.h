@@ -17,9 +17,6 @@ class IntakeClass
 public:
 	IntakeClass();
 	virtual ~IntakeClass();
-
-
-
 	Victor *Intake;
 	Victor *IntakeLift;
 	ResettableEncoderClass *LiftEncoder;
