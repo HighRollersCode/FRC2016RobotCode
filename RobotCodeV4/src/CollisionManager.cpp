@@ -88,6 +88,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 			{
 			case 0 :
 				//Reset Intske
+				printf("Intake Mode :: State 0 /r/n");
 				IntakeRef->LiftPIDController->Enable();
 				IntakeRef->GotoIntake();
 				if (ArmRef->GetLifterEncoder() > 0)
@@ -103,7 +104,8 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				//Reset Turret and wait Intake
 				//REENABLE
 				//ENABLE THIS WHEN THE INTAKE IS FUNCTIONAL
-				if(fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 20)
+				printf("Intake Mode :: State 1 /r/n");
+				if((fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 30) || (IntakeRef->GetLiftEncoder() < -422))
 				{
 					counter++;
 				}
@@ -111,7 +113,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				{
 					counter = 0;
 				}
-				if (counter > 2)
+				if (counter > 0)
 				{
 					ArmRef->SetTurret(0);
 					ArmRef->TurretPIDController->Enable();
@@ -120,6 +122,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				}
 				break;
 			case 2 :
+				printf("Intake Mode :: State 2 /r/n");
 				if(fabs(ArmRef->GetTurretEncoder()) <= 15 * 60.0f/24.0f)
 				{
 					counter++;
@@ -136,6 +139,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				}
 				break;
 			case 3:
+				printf("Intake Mode :: State 3 /r/n");
 				if(fabs(ArmRef->GetLifterEncoder() - Preset_Arm_Floor <= 10))
 				{
 					ArmRef->ArmPIDController->Disable();

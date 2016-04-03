@@ -56,15 +56,19 @@ bool Auton::Running()
 {
 	if(Abort)
 	{
+		printf("ABORTING: ABORT SET %f /r/n", AutonTimer->Get());
 		return false;
 	}
 	else if (ds->IsOperatorControl() == true)
 	{
+		printf("ABORTING: OPERATOR CONTROL %f /r/n", AutonTimer->Get());
 		return false;
 	}
 	else if (ds->IsEnabled() == false)
 	{
+		printf("ABORTING: DS DISABLED %f /r/n", AutonTimer->Get());
 		return false;
+
 	}
 	return true;
 }
@@ -122,8 +126,18 @@ void Auton::AutonWaitForIntake()
 	bool wait = true;
 	while(wait)
 	{
+		bool lowenough = false;
+		if(Arm->GetLifterEncoder() < -5250)
+		{
+			lowenough = true;
+		}
+		else
+		{
+			lowenough = false;
+		}
 		wait = (Collision->currentMode == CollisionManager::Intake);
 		wait &= (Collision->transitioning);
+		//wait &= !lowenough;
 		wait &= (Running());
 		Auto_System_Update();
 	}
@@ -163,7 +177,6 @@ void Auton::Auto_GYROTURN_TIMED(float heading, float seconds)
 		float angle_error = DriveTrain->ComputeAngleDelta(heading);
 		float turn = DriveTrain->mult *10* angle_error;
 
-		Auto_System_Update();
 		DriveTrain->StandardArcade(0,turn);
 	}
 	DriveTrain->StandardArcade(0,0);

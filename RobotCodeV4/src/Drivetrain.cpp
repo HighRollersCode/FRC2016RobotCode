@@ -33,7 +33,7 @@ Drivetrain::Drivetrain()
 	LeftEncoder = new Encoder(Encoder_Drive_Left_1, Encoder_Drive_Left_2, false,Encoder::EncodingType::k4X);
 	RightEncoder = new Encoder(Encoder_Drive_Right_1, Encoder_Drive_Right_2, false,Encoder::EncodingType::k4X);
 	disableInput = false;
-
+	Dropper = new Solenoid(3);
 	NormalShiftHigh = new Solenoid(Sol_Shifter_In);
 	NormalShiftLow = new Solenoid(Sol_Shifter_Out);
 
@@ -111,6 +111,17 @@ void Drivetrain::StandardArcade(float fwd,float turn)
 	float l = fwd + turn;
 	float r = fwd - turn;
 	StandardTank(l,r);
+}
+void Drivetrain::SetDropper(int enable)
+{
+	if(1)
+	{
+		Dropper->Set(true);
+	}
+	else
+	{
+		Dropper->Set(false);
+	}
 }
 void Drivetrain::UpdateEBrake(int enable,int targ)
 {

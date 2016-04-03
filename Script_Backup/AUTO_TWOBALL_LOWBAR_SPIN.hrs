@@ -43,37 +43,41 @@ IntakeEnablePID 1
 IntakeLift -385
 
 // Lower the arm into intake position
+Dropper 1
 ArmEnablePID 1
 Arm -1 -5750
-Wait 0.5
+Wait 0.45
+Dropper 0
+Wait .05
 
 // Turn on intake motor, arm intake wheels and lower the intake to pick up the ball
 Intake 1
 IntakeLift -450
-Wait 0.75
+Wait 0.85
 
 // Raise arm to go through low bar
 Arm -1 -5250
-Intake 0
+
 
 // Drive back and line up with the low bar
 DriveTicksHeading -1.0 -50 0.0
+Intake 0
 DriveTicksHeading -1.0 -180 -22.5
 //Drive through low bar
 DriveTicksHeading -0.8 -450 0.0
 ArmEnablePID 1
 TurretEnablePID 1
 
-Arm -1 -2500
+Arm -1 -3500
 // Turn the robot -25deg and aim
 GyroTurnTimed -25 0.5
 Shooter 1
-Arm -3600 -2500
+Arm -3600 -3500
 Wait 0.75
 
 //Track and Shoot
 Tracking 1
-WaitForTarget 10
+WaitForTarget 15
 Tracking 0
 
 FullShotQuick
@@ -87,8 +91,9 @@ GyroTurnTimed -2 0.75
 
 WaitForIntakeMode
 
-DriveTicksHeading 0.8 200 0.0
+DriveTicksHeading 0.8 50 0.0
 Intake 1
+DriveTicksHeading 0.8 150 0.0
 DriveTicksHeading 0.8 250 0.0
 
 // lift the intake to skim above the ball and drive into it
@@ -107,11 +112,12 @@ BrakeWait 0.2 -10
 Intake 0
 ArmEnablePID 1
 TurretEnablePID 1
-Arm -1 -2500
-GyroTurnTimed -25 0.5
+GyroTurnTimed -30 0.5
+Arm -1 -3500
+Wait .125
 Shooter 1
-Arm -3600 -2500
-Wait 1.0
+Arm -3600 -3500
+Wait 0.75
 
 //Track and Shoot
 Tracking 1

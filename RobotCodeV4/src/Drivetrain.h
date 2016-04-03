@@ -39,6 +39,8 @@ public:
 	Solenoid *PTO0;
 	Solenoid *PTO1;
 
+	Solenoid *Dropper;
+
 	bool CurrentPTOToggleTrig;
 	bool PrevPTOToggleTrig;
 
@@ -87,6 +89,8 @@ public:
 	void Drive_Auton (float Left, float Right);
 
 	void Failsafe_Update();
+
+	void SetDropper(int enable);
 
 	void SendData ();
 };

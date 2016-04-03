@@ -91,6 +91,19 @@ public:
 	}
 };
 
+
+class DropperCommand : public HrScriptCommandClass
+{
+public:
+	virtual const char * Get_Command_Name() { return "Dropper"; }
+	virtual int Get_Parameter_Count() { return 1; }
+	virtual HrScriptCommandClass * Create_Command() { return new DropperCommand(); }
+	virtual void Execute()
+	{
+		RobotDemo::Get()->AutonomousControl->DriveTrain->SetDropper(m_Parameters[0]);
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 										//Driving Code//
@@ -476,6 +489,9 @@ void RobotDemo::Init_Script_System()
 	m_ScriptSystem->Add_Command(new EnterIntakeModeCommand());
 	m_ScriptSystem->Add_Command(new EnterDefensiveModeCommand());
 	m_ScriptSystem->Add_Command(new IntakeEnablePIDCommand());
+
+	m_ScriptSystem->Add_Command(new DropperCommand());
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 

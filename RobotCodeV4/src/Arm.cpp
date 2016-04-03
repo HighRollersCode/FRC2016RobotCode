@@ -18,12 +18,12 @@ const float ARM_LIFT_I = -0.000005f;//1f;
 const float ARM_LIFT_D = 0;//.0001f;
 
 //const float MIN_TURRET_CMD = 0.12f;
-const float MIN_TURRET_CMD_HIGH_ANGLE = 0.17f;
-const float MIN_TURRET_CMD_LOW_ANGLE = 0.2f;
+const float MIN_TURRET_CMD_HIGH_ANGLE = 0.10f;
+const float MIN_TURRET_CMD_LOW_ANGLE = 0.09f;
 //const float ARM_TURRET_P = -.001125f;
 //const float ARM_TURRET_I = -.000025f;
-const float ARM_TURRET_P = -.0009f;
-const float ARM_TURRET_I = -.0000025f;
+const float ARM_TURRET_P = -.0005f;
+const float ARM_TURRET_I = -.000001f;
 const float ARM_TURRET_D = 0.0f;
 
 const float ARM_TURRET_TOLERANCE = 1;
@@ -199,9 +199,10 @@ ArmClass::ArmClass()
 	//245
 	TurretPIDController->SetContinuous(false);
 	TurretPIDController->Disable();
+
 	//TurretPIDController->SetAbsoluteTolerance(1);
 	TurretPIDController->SetInputRange(ARM_TURRET_MIN_ENCODER,ARM_TURRET_MAX_ENCODER);
-	TurretPIDController->SetOutputRange(-.7f,.7f);
+	TurretPIDController->SetOutputRange(-.75f,.75f);
 	TunerPIDController = new PIDController(ARM_TURRET_P * 1000,ARM_TURRET_I * 1000,ARM_TURRET_D * 1000,TurretEncoder,ArmTurret,.01f);
 	TunerPIDController->SetContinuous(false);
 	TunerPIDController->Disable();
@@ -753,7 +754,7 @@ float ArmClass::FSign(float a)
 }
 bool ArmClass::TurretRoughlyCentered()
 {
-	if(abs(GetTurretEncoder()) <= 50) //*60/24)
+	if(abs(GetTurretEncoder()) <= 250)
 	{
 		return true;
 	}

@@ -30,7 +30,7 @@ Arm  2075 -1
 Wait 1.0
 
 Tracking 1
-WaitForTarget 6.0
+WaitForTarget 15
 Tracking 0
 
 FullShot
@@ -39,6 +39,9 @@ Wait 3.0
 //Enter Intake Mode and then drive back through the low bar
 EnterIntakeMode
 Wait 2.5
+Wait 100
+
+
 ArmEnablePID 1
 Arm -1 -5200
 DriveTicksHeading -0.6 -825 0.0
