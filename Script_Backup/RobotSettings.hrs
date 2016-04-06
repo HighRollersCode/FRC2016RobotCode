@@ -11,7 +11,7 @@
 //SetAuto 6 is AUTO_ONEBALL_SHOWOFF
 //SetAuto 999 is EMPTY
 
-SetAuto 1
+SetAuto 21
 DriveTrainSettings .05
 //.013
 EBrakeSettings .5

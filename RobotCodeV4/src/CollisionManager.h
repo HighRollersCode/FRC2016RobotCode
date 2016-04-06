@@ -26,6 +26,7 @@ public:
 	};
 	IntakeClass *IntakeRef;
 	ArmClass *ArmRef;
+	DigitalInput *TurretCenterSwitch;
 
 	bool ShooterState_Cur;
 	bool ShooterState_Prev;
@@ -43,6 +44,9 @@ public:
 	int state;
 	int counter;
 	bool transitioning;
+	bool has_seen_center;
+	float centering_direction;
+
 	RobotMode currentMode;
 	CollisionManager(IntakeClass *IntakeRef, ArmClass *ArmRef );
 	virtual ~CollisionManager();

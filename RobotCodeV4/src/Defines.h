@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define PRACTICE_BOT 0
+#define PRACTICE_BOT 1
 
 //change to 0 for joys
 //right click robotcodev2
@@ -72,6 +72,7 @@
 #define Preset_Tower_Shot_Shooter_Wheels -0.45f
 
 #define Intake_Lift_Limit_Switch 10
+#define TURRET_CENTER_LIMIT_SWITCH 11
 
 //
 //  Encoder values to limit the arm movement to keep the arm within the 15" envelope around the robot

@@ -9,7 +9,24 @@
 #include "Defines.h"
 #include "ResettableEncoder.h"
 
-//const float MIN_ARM_LIFT_CMD = 0.1f;
+
+#if PRACTICE_BOT
+
+const float MIN_ARM_LIFT_CMD = 0.35f;
+const float ARM_LIFT_P = -.0005f;
+const float ARM_LIFT_I = -0.000005f;
+const float ARM_LIFT_D = 0;
+
+const float MIN_TURRET_CMD_HIGH_ANGLE = 0.10f;
+const float MIN_TURRET_CMD_LOW_ANGLE = 0.09f;
+const float ARM_TURRET_P = -.001125f;
+const float ARM_TURRET_I = -.000025f;
+const float ARM_TURRET_D = 0.0f;
+
+const float ARM_TURRET_TOLERANCE = 1;
+
+#else
+
 const float MIN_ARM_LIFT_CMD = 0.35f;
 //const float ARM_LIFT_P = -.0005f;
 //const float ARM_LIFT_I = -0.00001f;
@@ -26,7 +43,7 @@ const float ARM_TURRET_P = -.0005f;
 const float ARM_TURRET_I = -.000001f;
 const float ARM_TURRET_D = 0.0f;
 
-const float ARM_TURRET_TOLERANCE = 1;
+#endif
 
 const float LOCKON_DEGREES_X = 1.75f;
 const float LOCKON_DEGREES_Y = 2.0f;

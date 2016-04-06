@@ -36,6 +36,7 @@
 //arm (back shot) = 2925
 //turret (back shot) = 760
 
+
 // Lower the intake to drop the first ball
 IntakeStartPosition -139
 ArmStartPosition -1610
@@ -46,14 +47,16 @@ IntakeLift -385
 Dropper 1
 ArmEnablePID 1
 Arm -1 -5750
-Wait 0.45
-Dropper 0
-Wait .05
+Wait 0.15
 
 // Turn on intake motor, arm intake wheels and lower the intake to pick up the ball
 Intake 1
+Wait 0.45
 IntakeLift -450
-Wait 0.85
+
+Wait 0.15
+Dropper 0
+Wait 0.70
 
 // Raise arm to go through low bar
 Arm -1 -5250
@@ -64,7 +67,7 @@ DriveTicksHeading -1.0 -50 0.0
 Intake 0
 DriveTicksHeading -1.0 -180 -22.5
 //Drive through low bar
-DriveTicksHeading -0.8 -450 0.0
+DriveTicksHeading -0.7 -450 0.0
 ArmEnablePID 1
 TurretEnablePID 1
 
@@ -77,7 +80,7 @@ Wait 0.75
 
 //Track and Shoot
 Tracking 1
-WaitForTarget 15
+WaitForTarget 0.75
 Tracking 0
 
 FullShotQuick
@@ -92,36 +95,36 @@ GyroTurnTimed -2 0.75
 WaitForIntakeMode
 
 DriveTicksHeading 0.8 50 0.0
-Intake 1
-DriveTicksHeading 0.8 150 0.0
-DriveTicksHeading 0.8 250 0.0
 
-// lift the intake to skim above the ball and drive into it
-//IntakeLift -450
-DriveTicksHeading 0.4 170 0.0
+// Right here, we are starting onto the bump, 280 or so ticks from here, our front wheels are past the bump
+Intake 1
+DriveTicksHeading 0.5 280 0.0
+DriveTicksHeading 0.6 140 0.0
+DriveTicksHeading 0.4 150 0.0
+
 //BrakeWait 0.2 -10
-Wait 0.2
+Wait 0.25
 //GyroTurnTimed 20 .125
 //GyroTurnTimed 0 .125
 
 //Drive back through the lowbar
 Arm -1 -5250
 DriveTicksHeading -0.8 -600 0.0
-BrakeWait 0.2 -10
+BrakeWait 0.1 -10
 
 Intake 0
 ArmEnablePID 1
 TurretEnablePID 1
-GyroTurnTimed -30 0.5
 Arm -1 -3500
-Wait .125
+GyroTurnTimed -30 0.5
+
 Shooter 1
 Arm -3600 -3500
 Wait 0.75
 
 //Track and Shoot
 Tracking 1
-WaitForTarget 10
+WaitForTarget 0.75
 Tracking 0
 
 FullShotQuick

@@ -33,14 +33,16 @@ Drivetrain::Drivetrain()
 	LeftEncoder = new Encoder(Encoder_Drive_Left_1, Encoder_Drive_Left_2, false,Encoder::EncodingType::k4X);
 	RightEncoder = new Encoder(Encoder_Drive_Right_1, Encoder_Drive_Right_2, false,Encoder::EncodingType::k4X);
 	disableInput = false;
-	Dropper = new Solenoid(3);
+	//should be 2,3. practice bot is wired incorrectly
+	DropperOut = new Solenoid(2);
+	DropperIn = new Solenoid(3);
 	NormalShiftHigh = new Solenoid(Sol_Shifter_In);
 	NormalShiftLow = new Solenoid(Sol_Shifter_Out);
 
 
 	Ebrakemult=.5f;
-	PTO0 = new Solenoid(Sol_PTO_Enable);
-	PTO1 = new Solenoid(Sol_PTO_Disable);
+	//PTO0 = new Solenoid(Sol_PTO_Enable);
+	//PTO1 = new Solenoid(Sol_PTO_Disable);
 
 	CurrentPTOToggleTrig = false;
 	PrevPTOToggleTrig = false;
@@ -114,13 +116,15 @@ void Drivetrain::StandardArcade(float fwd,float turn)
 }
 void Drivetrain::SetDropper(int enable)
 {
-	if(1)
+	if(enable ==1)
 	{
-		Dropper->Set(true);
+		DropperOut->Set(true);
+		DropperIn->Set(false);
 	}
 	else
 	{
-		Dropper->Set(false);
+		DropperOut->Set(false);
+		DropperIn->Set(true);
 	}
 }
 void Drivetrain::UpdateEBrake(int enable,int targ)
@@ -263,7 +267,7 @@ void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEna
 
 		TransitionState = 0;
 	}
-
+/*
 	if(ToggleStatePTO == 1)
 	{
 		PTO0->Set(false);
@@ -274,7 +278,7 @@ void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEna
 		PTO0->Set(true);
 		PTO1->Set(false);
 	}
-
+*/
 	if(TransitionToPTO)
 	{
 		switch(TransitionState)

@@ -5,9 +5,13 @@
  *      Author: 987
  */
 
-#include <CollisionManager.h>
+#include "CollisionManager.h"
+#include "defines.h"
+#include "WPILib.h"
 
 CollisionManager::CollisionManager(IntakeClass *intake, ArmClass *arm ) {
+
+	TurretCenterSwitch = new DigitalInput(TURRET_CENTER_LIMIT_SWITCH);
 
 	ShooterState_Cur = false;
 	ShooterState_Prev = false;
@@ -26,6 +30,9 @@ CollisionManager::CollisionManager(IntakeClass *intake, ArmClass *arm ) {
 
 	state = 0;
 	transitioning = false;
+	has_seen_center = false;
+	centering_direction = 0.0f;
+
 	currentMode = RobotMode::Free;
 	IntakeRef = intake;
 	ArmRef = arm;
@@ -84,74 +91,119 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 	{
 		if(currentMode == RobotMode::Intake)
 		{
+			// in intake mode, constantly check for the turret prox switch
+			bool centered = (TurretCenterSwitch->Get() == false);
+			has_seen_center = centered;
+			if (centered)
+			{
+				ArmRef->ResetEncoderTurret();
+			}
+
 			switch(state)
 			{
 			case 0 :
-				//Reset Intske
-				printf("Intake Mode :: State 0 /r/n");
-				IntakeRef->LiftPIDController->Enable();
-				IntakeRef->GotoIntake();
-				if (ArmRef->GetLifterEncoder() > 0)
 				{
-					ArmRef->ArmPIDController->Enable();
-					ArmRef->SetArm(0);
+					//Reset Intske
+					printf("Intake Mode :: State 0 /r/n");
+					IntakeRef->LiftPIDController->Enable();
+					IntakeRef->GotoIntake();
+					if (ArmRef->GetLifterEncoder() > 0)
+					{
+						ArmRef->ArmPIDController->Enable();
+						ArmRef->SetArm(0);
+					}
+
+					state = 1;
+					counter = 0;
+					has_seen_center = false;
+					break;
 				}
 
-				state = 1;
-				counter = 0;
-				break;
 			case 1 :
-				//Reset Turret and wait Intake
-				//REENABLE
-				//ENABLE THIS WHEN THE INTAKE IS FUNCTIONAL
-				printf("Intake Mode :: State 1 /r/n");
-				if((fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 30) || (IntakeRef->GetLiftEncoder() < -422))
 				{
-					counter++;
+					//Reset Turret and wait Intake
+					//REENABLE
+					//ENABLE THIS WHEN THE INTAKE IS FUNCTIONAL
+					printf("Intake Mode :: State 1 /r/n");
+					if((fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 30) || (IntakeRef->GetLiftEncoder() < -422))
+					{
+						counter++;
+					}
+					else
+					{
+						counter = 0;
+					}
+					if (counter > 0)
+					{
+						ArmRef->SetTurret(0);
+						ArmRef->TurretPIDController->Enable();
+						state = 2;
+						counter = 0;
+					}
+					break;
 				}
-				else
-				{
-					counter = 0;
-				}
-				if (counter > 0)
-				{
-					ArmRef->SetTurret(0);
-					ArmRef->TurretPIDController->Enable();
-					state = 2;
-					counter = 0;
-				}
-				break;
 			case 2 :
-				printf("Intake Mode :: State 2 /r/n");
-				if(fabs(ArmRef->GetTurretEncoder()) <= 15 * 60.0f/24.0f)
 				{
-					counter++;
+					printf("Intake Mode :: State 2 /r/n");
+					if(fabs(ArmRef->GetTurretEncoder()) <= 15 * 60.0f/24.0f)
+					{
+						counter++;
+					}
+					else
+					{
+						counter= 0;
+					}
+					if(counter > 1)
+					{
+						state = 3;
+					}
+					break;
 				}
-				else
-				{
-					counter= 0;
-				}
-				if(counter > 1)
-				{
-					ArmRef->ArmPIDController->Enable();
-					ArmRef->ResetArm();
-					state = 3;
-				}
-				break;
 			case 3:
-				printf("Intake Mode :: State 3 /r/n");
-				if(fabs(ArmRef->GetLifterEncoder() - Preset_Arm_Floor <= 10))
 				{
-					ArmRef->ArmPIDController->Disable();
-					ArmRef->TurretPIDController->Disable();
-
-					//IntakeRef->GotoIntake();
-					//Wait(.25f);
-					//ArmRef->GoToArm();
-					state = 4;
-					transitioning = false;
+					// don't go down unless we see zero
+					bool prox_centered = true;  //(TurretCenterSwitch->Get() == false);
+					if (prox_centered)
+					{
+						ArmRef->ArmPIDController->Enable();
+						ArmRef->ResetArm();
+						state = 4;
+					}
+					else
+					{
+						// in autonomous, we are going to sit in this state because we don't want to wreck the arm
+						if (ArmRef->isauto)
+						{
+							printf("Turret Encoder Slipped During Auto!\r\n");
+						}
+						else
+						{
+							printf("Turret Encoder Slipped in Teleop, aborting transition to Intake Mode\r\n");
+							state = 5;
+							ArmRef->ArmPIDController->Disable();
+							ArmRef->TurretPIDController->Disable();
+							transitioning = false;
+						}
+					}
+					break;
 				}
-				break;
+
+			case 4:
+				{
+					printf("Intake Mode :: State 4 /r/n");
+					if(fabs(ArmRef->GetLifterEncoder() - Preset_Arm_Floor <= 10))
+					{
+						ArmRef->ArmPIDController->Disable();
+						ArmRef->TurretPIDController->Disable();
+
+						//IntakeRef->GotoIntake();
+						//Wait(.25f);
+						//ArmRef->GoToArm();
+						state = 5;
+						transitioning = false;
+					}
+					break;
+				}
 			}
 		}
 		else if(currentMode == RobotMode::Shooting)
@@ -347,5 +399,5 @@ void CollisionManager::SendData()
 	SmartDashboard::PutNumber("CM State", state);
 	SmartDashboard::PutBoolean("CM Trans", transitioning);
 	SmartDashboard::PutNumber("CM Mode", currentMode);
+	SmartDashboard::PutBoolean("TurretProx", (TurretCenterSwitch->Get() == false));
 }
-

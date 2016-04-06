@@ -36,10 +36,11 @@ public:
 	Solenoid *NormalShiftHigh;
 	Solenoid *NormalShiftLow;
 
-	Solenoid *PTO0;
-	Solenoid *PTO1;
+//	Solenoid *PTO0;
+//	Solenoid *PTO1;
 
-	Solenoid *Dropper;
+	Solenoid *DropperOut;
+	Solenoid *DropperIn;
 
 	bool CurrentPTOToggleTrig;
 	bool PrevPTOToggleTrig;
