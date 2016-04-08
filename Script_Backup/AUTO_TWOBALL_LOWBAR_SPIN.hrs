@@ -27,7 +27,6 @@
 
 
 
-
 //Distance from auto line is -260
 //Passing lowbar is -415
 //Driving to spot is -360 and -370
@@ -54,9 +53,9 @@ Intake 1
 Wait 0.45
 IntakeLift -450
 
-Wait 0.15
+Wait 0.65
 Dropper 0
-Wait 0.70
+Wait 0.10
 
 // Raise arm to go through low bar
 Arm -1 -5250
@@ -80,7 +79,7 @@ Wait 0.75
 
 //Track and Shoot
 Tracking 1
-WaitForTarget 0.75
+WaitForTarget 15
 Tracking 0
 
 FullShotQuick
@@ -124,7 +123,7 @@ Wait 0.75
 
 //Track and Shoot
 Tracking 1
-WaitForTarget 0.75
+WaitForTarget 15
 Tracking 0
 
 FullShotQuick
