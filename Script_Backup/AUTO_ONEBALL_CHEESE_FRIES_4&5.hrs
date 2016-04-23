@@ -1,0 +1,58 @@
+						//Functions
+// DriveTrainSettings <turningp value> <mult value>
+// Wait <seconds>
+// BrakeWait <seconds> <brake>
+// WaitForTarget <seconds>
+// WaitForIntakeMode
+// DisableBrake <seconds> <brake>
+// DriveTimed <fwd_speed> <turn_speed> <seconds>
+// Drive <fwd_speed> <turn_speed>
+// DriveTicksHeading <fwd_speed> <how many ticks> <desired heading>
+// DriveTurnTicks <Forward> <turn> <ticks>
+// GyroTurn <heading>
+// GryoTurnTimed <Heading> <seconds>
+// Tracking <enable>
+// ArmStartPosition <Location of Arm>
+// Arm <TurretTarg> <ArmTarg> -1 means no change
+// FullShot
+// FullShotQuick
+// Shooter <1 = on> 
+// IntakeStartPosition <Location of Lift>
+// IntakeLift <Location of Lift>
+// Intake <1 = on, 0 = off, -1 = reverse>
+// EnterIntakeMode
+// EnterDefensiveMode
+// ArmEnablePID <enable = 1, disable =0>
+// TurretEnablePID <enable = 1, disable =0>
+// IntakeEnablePID <enable = 1, disable =0>
+
+//Start position is the same as One Ball Low Bar
+
+//Drive-up to Cheese Fries and lower intake to push them down
+DriveTicksHeading 0.5 140 0.0
+BrakeWait 0.5 0.2
+
+IntakeEnablePID 1
+IntakeLift -480
+Wait 1
+
+DriveTicksHeading 0.7 200 0.0
+IntakeLift -320
+DriveTicksHeading 0.7 100 0.0
+BrakeWait 0.5 0.2
+
+// Aim at goal
+ArmEnablePID 1
+Arm -1 -2800
+DriveTicksHeading 0.5 150 0.0
+Wait 1
+
+//Target and Fire
+Tracking 1
+WaitForTarget 6.0
+Tracking 0
+FullShot
+Wait 2.0
+
+//Go to intake mode
+EnterIntakeMode

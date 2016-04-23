@@ -39,9 +39,13 @@ const float MIN_TURRET_CMD_HIGH_ANGLE = 0.10f;
 const float MIN_TURRET_CMD_LOW_ANGLE = 0.09f;
 //const float ARM_TURRET_P = -.001125f;
 //const float ARM_TURRET_I = -.000025f;
-const float ARM_TURRET_P = -.0005f;
-const float ARM_TURRET_I = -.000001f;
+
+// On practice field with a possibly low battery we found P = -0.0007f  I = -0.000004f
+const float ARM_TURRET_P = -.00065f; //.0005f
+const float ARM_TURRET_I = -.000003f; //.000001f
 const float ARM_TURRET_D = 0.0f;
+
+const float ARM_TURRET_TOLERANCE = 1;
 
 #endif
 

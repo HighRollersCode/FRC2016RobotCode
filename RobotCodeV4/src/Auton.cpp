@@ -93,9 +93,9 @@ void Auton::AutonWait2(float Seconds,int brake)
 }
 void Auton::AutonWaitForTarget(float Seconds)
 {
-	const float MAX_X_ERROR = 2.0f;
-	const float MAX_Y_ERROR = 3.0f;
-	const float MIN_LOCK_TIME = 0.25f;
+	const float MAX_X_ERROR = 1.75f; //1.8f;
+	const float MAX_Y_ERROR = 2.0f; //2.7f;
+	const float MIN_LOCK_TIME = 0.30f;
 
 	float targ = AutonTimer->Get() + Seconds;
 	bool keep_waiting = true;

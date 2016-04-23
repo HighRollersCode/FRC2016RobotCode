@@ -104,7 +104,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 			case 0 :
 				{
 					//Reset Intske
-					printf("Intake Mode :: State 0 /r/n");
+					printf("Intake Mode :: State 0 \r\n");
 					IntakeRef->LiftPIDController->Enable();
 					IntakeRef->GotoIntake();
 					if (ArmRef->GetLifterEncoder() > 0)
@@ -124,7 +124,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 					//Reset Turret and wait Intake
 					//REENABLE
 					//ENABLE THIS WHEN THE INTAKE IS FUNCTIONAL
-					printf("Intake Mode :: State 1 /r/n");
+					printf("Intake Mode :: State 1 \r\n");
 					if((fabs(IntakeRef->GetLiftEncoder()-Preset_Intake_Intake) <= 30) || (IntakeRef->GetLiftEncoder() < -422))
 					{
 						counter++;
@@ -144,7 +144,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 				}
 			case 2 :
 				{
-					printf("Intake Mode :: State 2 /r/n");
+					printf("Intake Mode :: State 2 \r\n");
 					if(fabs(ArmRef->GetTurretEncoder()) <= 15 * 60.0f/24.0f)
 					{
 						counter++;
@@ -162,7 +162,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 			case 3:
 				{
 					// don't go down unless we see zero
-					bool prox_centered = true;  //(TurretCenterSwitch->Get() == false);
+					bool prox_centered = (TurretCenterSwitch->Get() == false);
 					if (prox_centered)
 					{
 						ArmRef->ArmPIDController->Enable();
@@ -190,7 +190,7 @@ void CollisionManager::Update(bool ShootingState, bool IntakeState, bool Defensi
 
 			case 4:
 				{
-					printf("Intake Mode :: State 4 /r/n");
+					printf("Intake Mode :: State 4 \r\n");
 					if(fabs(ArmRef->GetLifterEncoder() - Preset_Arm_Floor <= 10))
 					{
 						ArmRef->ArmPIDController->Disable();
@@ -399,5 +399,5 @@ void CollisionManager::SendData()
 	SmartDashboard::PutNumber("CM State", state);
 	SmartDashboard::PutBoolean("CM Trans", transitioning);
 	SmartDashboard::PutNumber("CM Mode", currentMode);
-	SmartDashboard::PutBoolean("TurretProx", (TurretCenterSwitch->Get() == false));
+	SmartDashboard::PutBoolean("TurretProx", (TurretCenterSwitch->Get()));
 }

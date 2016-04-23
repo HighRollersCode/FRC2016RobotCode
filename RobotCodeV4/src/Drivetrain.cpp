@@ -217,7 +217,7 @@ float Drivetrain::ComputeAngleDelta(float t)
 	return err2;
 }
 
-void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEnable)
+void Drivetrain::Shifter_Update(bool DriveTrainShift,bool iooEnable,bool syncEnable)
 //0 pto
 {
 	if(syncEnable && inPTO == 1)
@@ -232,7 +232,7 @@ void Drivetrain::Shifter_Update(bool DriveTrainShift,bool PTOEnable,bool syncEna
 	CurrentInnerShifterToggleTrig = DriveTrainShift;
 
 	PrevOuterShifterToggleTrig = CurrentOuterShifterToggleTrig;
-	CurrentOuterShifterToggleTrig = PTOEnable;
+	//CurrentOuterShifterToggleTrig = PTOEnable;
 
 	if(PrevInnerShifterToggleTrig == false && CurrentInnerShifterToggleTrig == true)
 	{
@@ -410,7 +410,7 @@ void Drivetrain::SendData()
 {
 	SmartDashboard::PutNumber("LeftEncoder",LeftEncoder->Get());
 	SmartDashboard::PutNumber("RightEncoder",RightEncoder->Get());
-	SmartDashboard::PutNumber("ToggleDT",ToggleState);
+	SmartDashboard::PutBoolean("ToggleDT",ToggleState);
 	SmartDashboard::PutNumber("ToggleNeut",ToggleStateNeutral);
 	SmartDashboard::PutNumber("timer",transitionwait->Get());
 	SmartDashboard::PutNumber("Yaw", GetHeading());

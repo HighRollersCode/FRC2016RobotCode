@@ -58,8 +58,7 @@ Dropper 0
 Wait 0.10
 
 // Raise arm to go through low bar
-Arm -1 -5250
-
+EnterDefensiveMode
 
 // Drive back and line up with the low bar
 DriveTicksHeading -1.0 -50 0.0
@@ -67,12 +66,21 @@ Intake 0
 DriveTicksHeading -1.0 -180 -22.5
 //Drive through low bar
 DriveTicksHeading -0.7 -450 0.0
+
+
+
+Wait 1000
+
+
+
+
+
 ArmEnablePID 1
 TurretEnablePID 1
 
 Arm -1 -3500
 // Turn the robot -25deg and aim
-GyroTurnTimed -25 0.5
+//GyroTurnTimed -25 0.5
 Shooter 1
 Arm -3600 -3500
 Wait 0.75

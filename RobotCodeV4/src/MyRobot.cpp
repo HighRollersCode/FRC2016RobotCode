@@ -185,7 +185,7 @@ void RobotDemo::UpdateInputs()
 	commandLeft = leftStick->GetY();
 	commandRight = rightStick->GetY();
 	commandLift = turretStick->GetY()*.85f;
-	commandTurret = turretStick->GetX()*.5f;
+	commandTurret = turretStick->GetX(); //*.5f
 	prevIntakeArm = curIntakeArm;
 	curIntakeArm = rightStick->GetTrigger();
 
@@ -370,19 +370,18 @@ void RobotDemo::OperatorControl(void)
 		{
 			// Reset encoders assuming arm is in the UP postion and Intake is UP
 			// TRUE ZERO.
+			printf("User REZERO high!\r\n");
 			Arm->ResetEncoderLifter();
 			Arm->ResetEncoderTurret();
 			Intake->ResetEncoderLift();
 		}
 		if (turretStick->GetRawButton(10))
 		{
+			printf("User REZERO low!\r\n");
+
 			// BEWARE! this code-path for 'emergency' use IN-MATCH and assumes
 			// the arm and intakes are in the DOWN position.
 			Arm->ResetEncoderTurret();
-
-			// Old RESET, arm up, intake up
-			//Arm->ResetEncoderLifter();
-			//Intake->ResetEncoderLift();
 
 			// New RESET, arm down, intake down
 			Arm->ResetEncoderLifterDown();
