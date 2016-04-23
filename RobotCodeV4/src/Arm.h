@@ -47,6 +47,9 @@ public:
 
 	float LastMoveByDegreesX;
 	float LastMoveByDegreesY;
+	float LockonDegreesX;
+	float LockonDegreesY;
+
 	Relay *TargetingLights;
 	int ResetState;
 
@@ -75,7 +78,7 @@ public:
 
 	void Auto_Start();
 	void Tele_Start();
-	void Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX, float cY,float calX,float calY);
+	void Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset,bool EnableTracking,float cX, float cY,float calX,float calY,float target_area);
 	void UpdateLift(float ArmLift);
 	void UpdateTurret(float Turret);
 	int GetTurretEncoder();
@@ -97,7 +100,7 @@ public:
 	void StartTracking(int enable);
 	void AutonomousTrackingUpdate(float tx, float ty, float crossX, float crossY);
 
-	void HandleTarget(float centerX, float centerY,float calX, float calY);
+	void HandleTarget(float centerX, float centerY,float calX, float calY,float target_a);
 
 	void GotoShooting();
 	void GotoTowerShot();

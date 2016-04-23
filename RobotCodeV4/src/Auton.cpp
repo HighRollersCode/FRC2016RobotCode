@@ -230,7 +230,7 @@ bool Auton::Auto_System_Update()
 		Targeting->Update();
 //		Arm->AutonomousTrackingUpdate(Targeting->Get_Target_Distance(),Targeting->Get_Target_Angle(),Targeting->Get_Cal_X(),Targeting->Get_Cal_Y());
 		Arm->Update(0,0,0,false,false,Arm->isTracking,
-				Targeting->Get_Target_Distance(),Targeting->Get_Target_Angle(),Targeting->Get_Cal_X(),Targeting->Get_Cal_Y());
+				Targeting->Get_Target_Distance(),Targeting->Get_Target_Angle(),Targeting->Get_Cal_X(),Targeting->Get_Cal_Y(),0.001f);
 		Collision->Update(false,false,false,false);
 		RobotDemo::Get()->LightUpdate();
 		Arm->FullShotUpdate();

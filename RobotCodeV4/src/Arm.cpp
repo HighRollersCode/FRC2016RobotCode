@@ -53,6 +53,11 @@ const float LOCKON_DEGREES_X = 1.75f;
 const float LOCKON_DEGREES_Y = 2.0f;
 const float LOCKON_SECONDS = 0.35f;
 
+const float LOCKON_DEGREES_X_CLOSE = 2.5f;
+const float LOCKON_DEGREES_Y_CLOSE = 3.0f;
+const float LOCKON_CLOSE_AREA = 0.03f;
+const float LOCKON_FAR_AREA = 0.0175f;
+
 //////////////////////////////////////////////////////////////////////////
 //
 //  Specialized 'Victor' Wrapper classes for the arm which validate
@@ -172,6 +177,9 @@ ArmClass::ArmClass()
 
 	LastMoveByDegreesX = 360.0f;
 	LastMoveByDegreesY = 360.0f;
+	LockonDegreesX = LOCKON_DEGREES_X;
+	LockonDegreesY = LOCKON_DEGREES_Y;
+
 
 	TurretEncoder_Cur = 0;
 	TurretEncoder_Targ = 0;
@@ -239,6 +247,8 @@ void ArmClass::Auto_Start()
 
 	LastMoveByDegreesX = 360.0f;
 	LastMoveByDegreesY = 360.0f;
+	LockonDegreesX = LOCKON_DEGREES_X;
+	LockonDegreesY = LOCKON_DEGREES_Y;
 
 	ResetEncoderLifter();
 	ResetEncoderTurret();
@@ -388,7 +398,8 @@ void ArmClass::Tele_Start()
 	LastShotTimer->Reset();
 	LastShotTimer->Start();
 }
-void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset, bool EnableTracking,float cX,float cY,float calX,float calY)
+
+void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, bool Reset, bool EnableTracking,float cX,float cY,float calX,float calY,float target_area)
 {
 	PreviousEnableTracking = CurrentEnableTracking;
 	CurrentEnableTracking = EnableTracking;
@@ -421,7 +432,7 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 
 		ArmPIDController->Enable();
 		TurretPIDController->Enable();
-		if((fabs(LastMoveByDegreesX) > LOCKON_DEGREES_X) || (fabs(LastMoveByDegreesY) > LOCKON_DEGREES_Y))
+		if((fabs(LastMoveByDegreesX) > LockonDegreesX) || (fabs(LastMoveByDegreesY) > LockonDegreesY))
 		{
 			ArmLockonTimer->Reset();
 		}
@@ -458,7 +469,7 @@ void ArmClass::Update(float ArmLift, float Shooter, float Turret, bool Ball, boo
 
 	if(ArmTimer->Get() > .01f)
 	{
-		HandleTarget(cX,cY,calX,calY);
+		HandleTarget(cX,cY,calX,calY,target_area);
 		ArmTimer->Reset();
 		ArmTimer->Start();
 	}
@@ -528,7 +539,7 @@ void ArmClass::AutonomousTrackingUpdate(float tx, float ty, float crossX, float 
 
 	if(ArmTimer->Get() > .01f)
 	{
-		HandleTarget(tx,ty,crossX,crossY);
+		HandleTarget(tx,ty,crossX,crossY,0.001f);
 		ArmTimer->Reset();
 		ArmTimer->Start();
 	}
@@ -655,11 +666,14 @@ void ArmClass::ResetTurret()
 	SetTurret(0);
 }
 
-void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
+void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY,float target_a)
 {
 	if(fabs (centerX) >= 1 || fabs(centerY) >= 1)
 	{
 		LastMoveByDegreesX = LastMoveByDegreesY = 360.0f;
+		LockonDegreesX = LOCKON_DEGREES_X;
+		LockonDegreesY = LOCKON_DEGREES_Y;
+
 		if (CurrentEnableTracking)
 		{
 			SetTurret(GetTurretEncoder());
@@ -669,6 +683,13 @@ void ArmClass::HandleTarget(float centerX,float centerY,float calX,float calY)
 	}
 	else
 	{
+		// we want t = 1.0 when target_area = close, 0.0 when target_area = far
+		float t = (target_a - LOCKON_FAR_AREA) / (LOCKON_CLOSE_AREA - LOCKON_FAR_AREA);
+		if (t < 0.0f) t = 0.0f;
+		if (t > 1.0f) t = 1.0f;
+		LockonDegreesX = LOCKON_DEGREES_X + (LOCKON_DEGREES_X_CLOSE - LOCKON_DEGREES_X) * t;
+		LockonDegreesY = LOCKON_DEGREES_Y + (LOCKON_DEGREES_Y_CLOSE - LOCKON_DEGREES_Y) * t;
+
 		float moveByX_Degrees = 0;
 		float moveByY_Degrees = 0;
 

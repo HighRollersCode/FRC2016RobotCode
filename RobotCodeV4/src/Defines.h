@@ -92,7 +92,7 @@
 #define ARM_LIFT_MIN_WHEN_FWD 			15.0f
 #define ARM_LIFT_MAX_WHEN_FWD 			120.0f  //140.8f
 #define ARM_LIFT_MIN_WHEN_SIDEWAYS  	20.0f
-#define ARM_LIFT_MAX_WHEN_SIDEWAYS		120.0f  //147.0f
+#define ARM_LIFT_MAX_WHEN_SIDEWAYS		147.0f  //120.0f
 
 #endif
 

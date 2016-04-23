@@ -56,6 +56,7 @@ public:
 	bool DisConnectionPrevTog;
 	bool DisConnectionCurTog;
 
+	PWM *LightOutputPwm;
 
 	RobotDemo(void);
 	~RobotDemo(void);

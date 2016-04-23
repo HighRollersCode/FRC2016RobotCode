@@ -74,7 +74,7 @@ RobotDemo::RobotDemo(void)
 	ArmIntakeTimer->Start();
 
 	MatchTimer = new Timer();
-
+	LightOutputPwm = new PWM(12);
 
 	JetsonConnected = false;
 
@@ -344,6 +344,10 @@ void RobotDemo::OperatorControl(void)
 			ResetState();
 			Jetson_Connection();
 		}
+		//Test the lights
+		float val = 2000.0f * 0.5f*(turretStick->GetZ() + 1.0f);
+		LightOutputPwm->SetRaw((short)val);
+
 
 		Send_Smartdashboard_Data();
 		UpdateInputs();
@@ -351,7 +355,7 @@ void RobotDemo::OperatorControl(void)
 		DriveTrain->StandardTank(-commandLeft, -commandRight);
 		Arm->Update(commandLift, -commandArmShooter, -commandTurret, turretStick->GetTrigger(), turretStick->GetRawButton(11),
 				turretStick->GetRawButton(2),TargClient->Get_Target_Distance(),TargClient->Get_Target_Angle(),
-				TargClient->Get_Cal_X(),TargClient->Get_Cal_Y());
+				TargClient->Get_Cal_X(),TargClient->Get_Cal_Y(), TargClient->Get_TargetArea());
 		Arm->UpdateEmergency(turretStick->GetRawButton(8));
 		Intake->Update(-commandintake, -commandintakelift);
 		DriveTrain->Shifter_Update(leftStick->GetTrigger(), leftStick->GetRawButton(10),leftStick->GetRawButton(11));
